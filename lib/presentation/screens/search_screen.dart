@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
 import '../components/ember_chip.dart';

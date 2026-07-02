@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 import '../../domain/models/models.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../utils/auth_guard.dart';

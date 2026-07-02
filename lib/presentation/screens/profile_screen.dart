@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
 import '../../utils/link_launcher.dart';
@@ -445,7 +445,7 @@ class _SubmissionsList extends StatelessWidget {
               final hit = response.items[index];
               return SearchStoryCard(
                 hit: hit,
-                onTap: () => context.push('/feeds/post/${hit.objectId}'),
+                onTap: () => context.push('/post/${hit.objectId}'),
               );
             },
           ),
@@ -498,7 +498,7 @@ class _CommentsList extends StatelessWidget {
               final comment = response.items[index];
               return ProfileCommentCard(
                 comment: comment,
-                onTap: () => context.push('/feeds/post/${comment.storyId}'),
+                onTap: () => context.push('/post/${comment.storyId}'),
               );
             },
           ),

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 
 class EmberAppBar extends StatelessWidget {

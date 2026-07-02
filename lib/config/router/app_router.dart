@@ -62,8 +62,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile/:username',
         builder: (context, state) {
-          final username = state.pathParameters['username'] ?? '';
+          final username = Uri.decodeComponent(
+            state.pathParameters['username'] ?? '',
+          );
           return ProfileScreen(username: username);
+        },
+      ),
+      GoRoute(
+        path: '/post/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          return PostDetailScreen(itemId: id);
         },
       ),
       GoRoute(

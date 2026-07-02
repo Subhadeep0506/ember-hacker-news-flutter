@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import 'app_typography.dart';
 import 'ember_theme_extension.dart';
 
 class AppTheme {
@@ -28,9 +28,7 @@ class AppTheme {
     EmberThemeExtension ember,
     VisualDensity? density,
   ) {
-    final textTheme = GoogleFonts.interTextTheme(
-      ThemeData(colorScheme: colorScheme).textTheme,
-    );
+    final textTheme = AppTypography.textTheme(colorScheme);
 
     return ThemeData(
       useMaterial3: true,
@@ -66,7 +64,9 @@ class AppTheme {
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -75,13 +75,18 @@ class AppTheme {
           side: BorderSide(color: ember.accentOrange),
           shape: const StadiumBorder(),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: ember.chipUnselectedBackground,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,

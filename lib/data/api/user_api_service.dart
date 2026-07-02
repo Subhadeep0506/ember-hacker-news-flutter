@@ -7,7 +7,8 @@ class UserApiService {
   UserApiService(this._client);
 
   Future<HnUser> getUser(String username) async {
-    final json = await _client.get('/user/$username');
+    final encodedUsername = Uri.encodeComponent(username);
+    final json = await _client.get('/user/$encodedUsername');
     return HnUser.fromJson(json);
   }
 
@@ -16,8 +17,9 @@ class UserApiService {
     int page = 0,
     int limit = 20,
   }) async {
+    final encodedUsername = Uri.encodeComponent(username);
     final json = await _client.get(
-      '/user/$username/submissions',
+      '/user/$encodedUsername/submissions',
       queryParams: {'page': page.toString(), 'limit': limit.toString()},
     );
     return SearchResponse.fromJson(json);
@@ -28,8 +30,9 @@ class UserApiService {
     int page = 0,
     int limit = 20,
   }) async {
+    final encodedUsername = Uri.encodeComponent(username);
     final json = await _client.get(
-      '/user/$username/comments',
+      '/user/$encodedUsername/comments',
       queryParams: {'page': page.toString(), 'limit': limit.toString()},
     );
     return UserCommentsResponse.fromJson(json);

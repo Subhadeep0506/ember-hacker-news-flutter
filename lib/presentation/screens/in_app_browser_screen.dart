@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 
 /// Full-screen in-app browser backed by [WebView]. Reachable only on mobile
 /// (webview_flutter has no web support); links on web fall back to the system

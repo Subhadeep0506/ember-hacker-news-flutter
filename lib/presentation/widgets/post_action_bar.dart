@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../components/ember_action_button.dart';
 import '../view_models/post_detail_view_model.dart';

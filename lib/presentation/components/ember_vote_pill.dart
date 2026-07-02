@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../config/app_icons.dart';
+import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../utils/compact_number.dart';
 

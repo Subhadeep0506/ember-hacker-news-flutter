@@ -32,7 +32,45 @@ class AlgoliaCommentHit {
   });
 
   factory AlgoliaCommentHit.fromJson(Map<String, dynamic> json) =>
-      _$AlgoliaCommentHitFromJson(json);
+      AlgoliaCommentHit(
+        objectId: _stringValue(json['objectID'] ?? json['id']),
+        author: _stringValue(json['author']),
+        commentText: _stringValue(
+          json['comment_text'] ?? json['story_text'] ?? json['title'],
+        ),
+        storyId: _intValue(json['story_id'] ?? json['objectID']),
+        storyTitle: _nullableString(json['story_title'] ?? json['title']),
+        storyUrl: _nullableString(json['story_url'] ?? json['url']),
+        parentId: _nullableInt(json['parent_id']),
+        createdAt: _stringValue(json['created_at']),
+        createdAtI: _intValue(json['created_at_i']),
+        points: _nullableInt(json['points']),
+      );
 
   Map<String, dynamic> toJson() => _$AlgoliaCommentHitToJson(this);
+}
+
+String _stringValue(Object? value, [String fallback = '']) {
+  if (value == null) return fallback;
+  final text = value.toString();
+  return text.isEmpty ? fallback : text;
+}
+
+String? _nullableString(Object? value) {
+  if (value == null) return null;
+  final text = value.toString();
+  return text.isEmpty ? null : text;
+}
+
+int _intValue(Object? value) {
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
+int? _nullableInt(Object? value) {
+  if (value == null) return null;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
 }

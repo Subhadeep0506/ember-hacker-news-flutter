@@ -12,7 +12,7 @@ class TappableUsername extends StatelessWidget {
     if (username == null || username!.isEmpty) return const SizedBox.shrink();
 
     return GestureDetector(
-      onTap: () => context.push('/profile/$username'),
+      onTap: () => context.push('/profile/${Uri.encodeComponent(username!)}'),
       child: Text(username ?? '', style: style),
     );
   }
