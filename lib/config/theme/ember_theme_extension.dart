@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
   final Color accentOrange;
+  final Color scaffoldBackground;
   final Color storyCardBackground;
+  final Color chipUnselectedBackground;
+  final Color votePillBackground;
+  final Color iconButtonBackground;
   final Color scoreColor;
   final Color metadataColor;
   final Color domainColor;
@@ -19,7 +23,11 @@ class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
 
   const EmberThemeExtension({
     required this.accentOrange,
+    required this.scaffoldBackground,
     required this.storyCardBackground,
+    required this.chipUnselectedBackground,
+    required this.votePillBackground,
+    required this.iconButtonBackground,
     required this.scoreColor,
     required this.metadataColor,
     required this.domainColor,
@@ -56,7 +64,11 @@ class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
   factory EmberThemeExtension.dark() {
     return const EmberThemeExtension(
       accentOrange: Color(0xFFFF6600),
-      storyCardBackground: Color(0xFF1E1E1E),
+      scaffoldBackground: Color(0xFF0E0E0E),
+      storyCardBackground: Color(0xFF1A1A1A),
+      chipUnselectedBackground: Color(0xFF262626),
+      votePillBackground: Color(0xFF242424),
+      iconButtonBackground: Color(0x14FFFFFF),
       scoreColor: Color(0xFFFF6600),
       metadataColor: Color(0xFF9E9E9E),
       domainColor: Color(0xFF7A7A7A),
@@ -76,7 +88,11 @@ class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
   factory EmberThemeExtension.light() {
     return const EmberThemeExtension(
       accentOrange: Color(0xFFFF6600),
-      storyCardBackground: Color(0xFFF5F5F5),
+      scaffoldBackground: Color(0xFFF7F4EF),
+      storyCardBackground: Color(0xFFFFFFFF),
+      chipUnselectedBackground: Color(0xFFECE8E1),
+      votePillBackground: Color(0xFFF0ECE4),
+      iconButtonBackground: Color(0x14000000),
       scoreColor: Color(0xFFE55800),
       metadataColor: Color(0xFF757575),
       domainColor: Color(0xFF9E9E9E),
@@ -96,7 +112,11 @@ class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
   @override
   EmberThemeExtension copyWith({
     Color? accentOrange,
+    Color? scaffoldBackground,
     Color? storyCardBackground,
+    Color? chipUnselectedBackground,
+    Color? votePillBackground,
+    Color? iconButtonBackground,
     Color? scoreColor,
     Color? metadataColor,
     Color? domainColor,
@@ -113,7 +133,12 @@ class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
   }) {
     return EmberThemeExtension(
       accentOrange: accentOrange ?? this.accentOrange,
+      scaffoldBackground: scaffoldBackground ?? this.scaffoldBackground,
       storyCardBackground: storyCardBackground ?? this.storyCardBackground,
+      chipUnselectedBackground:
+          chipUnselectedBackground ?? this.chipUnselectedBackground,
+      votePillBackground: votePillBackground ?? this.votePillBackground,
+      iconButtonBackground: iconButtonBackground ?? this.iconButtonBackground,
       scoreColor: scoreColor ?? this.scoreColor,
       metadataColor: metadataColor ?? this.metadataColor,
       domainColor: domainColor ?? this.domainColor,
@@ -135,9 +160,29 @@ class EmberThemeExtension extends ThemeExtension<EmberThemeExtension> {
     if (other is! EmberThemeExtension) return this;
     return EmberThemeExtension(
       accentOrange: Color.lerp(accentOrange, other.accentOrange, t)!,
+      scaffoldBackground: Color.lerp(
+        scaffoldBackground,
+        other.scaffoldBackground,
+        t,
+      )!,
       storyCardBackground: Color.lerp(
         storyCardBackground,
         other.storyCardBackground,
+        t,
+      )!,
+      chipUnselectedBackground: Color.lerp(
+        chipUnselectedBackground,
+        other.chipUnselectedBackground,
+        t,
+      )!,
+      votePillBackground: Color.lerp(
+        votePillBackground,
+        other.votePillBackground,
+        t,
+      )!,
+      iconButtonBackground: Color.lerp(
+        iconButtonBackground,
+        other.iconButtonBackground,
         t,
       )!,
       scoreColor: Color.lerp(scoreColor, other.scoreColor, t)!,

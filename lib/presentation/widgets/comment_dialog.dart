@@ -146,11 +146,8 @@ class _CommentDialogContentState extends State<_CommentDialogContent> {
           Flexible(
             child: TextField(
               controller: _textController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Write your reply...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 alignLabelWithHint: true,
               ),
               maxLines: null,
@@ -175,10 +172,7 @@ class _CommentDialogContentState extends State<_CommentDialogContent> {
                   onPressed:
                       _isLoading ? null : () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    minimumSize: const Size.fromHeight(48),
                   ),
                   child: const Text('Cancel'),
                 ),
@@ -188,11 +182,7 @@ class _CommentDialogContentState extends State<_CommentDialogContent> {
                 child: FilledButton(
                   onPressed: _isLoading ? null : _submit,
                   style: FilledButton.styleFrom(
-                    backgroundColor: ember?.accentOrange,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    minimumSize: const Size.fromHeight(48),
                   ),
                   child: _isLoading
                       ? const SizedBox(

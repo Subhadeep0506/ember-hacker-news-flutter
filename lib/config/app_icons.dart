@@ -13,7 +13,10 @@ abstract final class AppIcons {
   static const IconData favorite = LucideIcons.star;
   static const IconData save = LucideIcons.bookmark;
   static const IconData share = LucideIcons.share2;
+  static const IconData gift = LucideIcons.gift;
   static const IconData more = LucideIcons.moreHorizontal;
+  static const IconData back = LucideIcons.arrowLeft;
+  static const IconData flame = LucideIcons.flame;
 
   // Links / navigation affordances
   static const IconData openExternal = LucideIcons.externalLink;
@@ -24,7 +27,11 @@ abstract final class AppIcons {
   static const IconData user = LucideIcons.user;
   static const IconData globe = LucideIcons.globe;
   static const IconData chevronDown = LucideIcons.chevronDown;
+  static const IconData chevronUp = LucideIcons.chevronUp;
   static const IconData chevronRight = LucideIcons.chevronRight;
+  static const IconData check = LucideIcons.check;
+  static const IconData collapseAll = LucideIcons.chevronsDownUp;
+  static const IconData expandAll = LucideIcons.chevronsUpDown;
 
   // Status / feedback
   static const IconData imageError = LucideIcons.imageOff;

@@ -72,7 +72,8 @@ class ProfileCommentCard extends StatelessWidget {
 
   String _buildMetadata() {
     final parts = <String>[];
-    if (comment.points > 0) parts.add('${comment.points} pts');
+    final points = comment.points ?? 0;
+    if (points > 0) parts.add('$points pts');
     final time = timeAgo(comment.createdAtI);
     if (time.isNotEmpty) parts.add(time);
     return parts.join(' · ');

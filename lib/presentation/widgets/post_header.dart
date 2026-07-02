@@ -2,15 +2,17 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_icons.dart';
 import '../../config/di/providers.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
+import '../../utils/link_launcher.dart';
 import '../../utils/time_ago.dart';
 import '../../utils/url_utils.dart';
 import '../components/cross_platform_image.dart' as platform_image;
+import '../components/ember_domain_avatar.dart';
+import '../components/ember_gradient_hero.dart';
 import '../components/tappable_username.dart';
 
 /// Full post header: hero image stacked above the textual content.
@@ -59,19 +61,21 @@ class PostHeaderContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.title ?? '',
-            style: postTitleStyle(textTheme),
-          ),
+          Text(item.title ?? '', style: postTitleStyle(textTheme)),
           if (domain != null) ...[
             const SizedBox(height: 8),
-            _DomainRow(domain: domain, ember: ember, textTheme: textTheme),
+            _DomainRow(
+              domain: domain,
+              url: item.url,
+              ember: ember,
+              textTheme: textTheme,
+            ),
           ],
           const SizedBox(height: 12),
           _MetadataRow(item: item, ember: ember, textTheme: textTheme),
           if (item.url != null) ...[
             const SizedBox(height: 16),
-            _OpenArticleButton(url: item.url, ember: ember),
+            _OpenArticleButton(url: item.url),
           ],
         ],
       ),
@@ -80,34 +84,70 @@ class PostHeaderContent extends StatelessWidget {
 }
 
 /// Shared title text style so measurement and rendering stay in sync.
-TextStyle? postTitleStyle(TextTheme textTheme) => textTheme.titleLarge?.copyWith(
-      fontWeight: FontWeight.w700,
-      height: 1.3,
-    );
+TextStyle? postTitleStyle(TextTheme textTheme) =>
+    textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, height: 1.3);
 
 /// Hero image for a post, resolved via [ogImageProvider] with a domain-aware
 /// fallback placeholder. Public so it can be used as a standalone sliver.
 class PostHeroImage extends ConsumerWidget {
   final String articleUrl;
 
-  const PostHeroImage({super.key, required this.articleUrl});
+  /// When true the image fills its box edge-to-edge with no rounding or border,
+  /// used behind a [SliverAppBar]'s floating controls on the detail screen.
+  final bool fullBleed;
+
+  const PostHeroImage({
+    super.key,
+    required this.articleUrl,
+    this.fullBleed = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ember = Theme.of(context).extension<EmberThemeExtension>();
-    final domain = extractDomain(articleUrl);
     final asyncImage = ref.watch(ogImageProvider(articleUrl));
+    final height = fullBleed ? double.infinity : 180.0;
 
     return asyncImage.when(
-      loading: () => _FallbackPlaceholder(
-        domain: domain,
-        ember: ember,
-        showLoading: true,
-      ),
-      error: (_, _) => _FallbackPlaceholder(domain: domain, ember: ember),
+      loading: () => _LoadingPlaceholder(ember: ember, fullBleed: fullBleed),
+      error: (_, _) =>
+          EmberGradientHero(seed: articleUrl.hashCode, fullBleed: fullBleed),
       data: (imageUrl) {
         if (imageUrl == null) {
-          return _FallbackPlaceholder(domain: domain, ember: ember);
+          return EmberGradientHero(
+            seed: articleUrl.hashCode,
+            fullBleed: fullBleed,
+          );
+        }
+
+        final image = platform_image.buildPlatformImage(
+          imageUrl: imageUrl,
+          width: double.infinity,
+          height: height,
+          fit: BoxFit.cover,
+          errorWidget: (_, url, error) {
+            log('Hero image failed for $url: $error', name: 'PostHeader');
+            return EmberGradientHero(
+              seed: articleUrl.hashCode,
+              fullBleed: fullBleed,
+            );
+          },
+        );
+
+        if (fullBleed) {
+          // Dissolve the image's lower edge into the content-sheet colour so it
+          // blends into the sheet below instead of ending in a hard seam.
+          return SizedBox(
+            width: double.infinity,
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                image,
+                _HeroBottomFade(ember: ember),
+              ],
+            ),
+          );
         }
 
         return Container(
@@ -115,23 +155,12 @@ class PostHeroImage extends ConsumerWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color:
-                  Theme.of(context).colorScheme.outlineVariant.withAlpha(40),
+              color: Theme.of(context).colorScheme.outlineVariant.withAlpha(40),
             ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: platform_image.buildPlatformImage(
-              imageUrl: imageUrl,
-              width: double.infinity,
-              height: 180,
-              fit: BoxFit.cover,
-              errorWidget: (_, url, error) {
-                log('Hero image failed for $url: $error',
-                    name: 'PostHeader');
-                return _FallbackPlaceholder(domain: domain, ember: ember);
-              },
-            ),
+            child: image,
           ),
         );
       },
@@ -139,21 +168,45 @@ class PostHeroImage extends ConsumerWidget {
   }
 }
 
-class _FallbackPlaceholder extends StatelessWidget {
-  final String? domain;
+/// Gradient scrim over the hero's lower edge, fading to the scaffold/content
+/// sheet colour so a full-bleed image blends into the sheet below with no seam.
+class _HeroBottomFade extends StatelessWidget {
   final EmberThemeExtension? ember;
-  final bool showLoading;
 
-  const _FallbackPlaceholder({
-    required this.domain,
-    required this.ember,
-    this.showLoading = false,
-  });
+  const _HeroBottomFade({required this.ember});
+
+  @override
+  Widget build(BuildContext context) {
+    final fade =
+        ember?.scaffoldBackground ?? Theme.of(context).scaffoldBackgroundColor;
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [fade.withValues(alpha: 0), fade],
+            stops: const [0.6, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Neutral placeholder shown while the OG image is being fetched. Kept subtle
+/// (not the gradient) so we don't flash a mesh gradient and then swap in a real
+/// image once the fetch resolves.
+class _LoadingPlaceholder extends StatelessWidget {
+  final EmberThemeExtension? ember;
+  final bool fullBleed;
+
+  const _LoadingPlaceholder({required this.ember, this.fullBleed = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180,
+      height: fullBleed ? double.infinity : 180,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -165,34 +218,13 @@ class _FallbackPlaceholder extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (showLoading)
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: ember?.accentOrange.withAlpha(100),
-                ),
-              )
-            else
-              Icon(
-                AppIcons.imageError,
-                size: 32,
-                color: ember?.metadataColor.withAlpha(100),
-              ),
-            if (domain != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                domain ?? '',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: ember?.domainColor),
-              ),
-            ],
-          ],
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: ember?.accentOrange.withAlpha(100),
+          ),
         ),
       ),
     );
@@ -201,11 +233,13 @@ class _FallbackPlaceholder extends StatelessWidget {
 
 class _DomainRow extends StatelessWidget {
   final String domain;
+  final String? url;
   final EmberThemeExtension? ember;
   final TextTheme textTheme;
 
   const _DomainRow({
     required this.domain,
+    required this.url,
     required this.ember,
     required this.textTheme,
   });
@@ -214,13 +248,9 @@ class _DomainRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Image.network(
-          'https://www.google.com/s2/favicons?domain=$domain&sz=32',
-          width: 16,
-          height: 16,
-          errorBuilder: (_, _, _) =>
-              Icon(AppIcons.globe, size: 16, color: ember?.domainColor),
-        ),
+        // Reuse EmberDomainAvatar so the favicon loads via a platform-safe image
+        // (avoids the web CORS failure that Image.network hits here).
+        EmberDomainAvatar(url: url, size: 16),
         const SizedBox(width: 6),
         Text(
           '($domain)',
@@ -271,28 +301,22 @@ class _MetadataRow extends StatelessWidget {
   }
 }
 
-class _OpenArticleButton extends StatelessWidget {
+class _OpenArticleButton extends ConsumerWidget {
   final String? url;
-  final EmberThemeExtension? ember;
 
-  const _OpenArticleButton({required this.url, required this.ember});
+  const _OpenArticleButton({required this.url});
 
   @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FilledButton.icon(
       onPressed: () {
-        if (url != null) {
-          launchUrl(Uri.parse(url ?? ''), mode: LaunchMode.externalApplication);
+        final target = url;
+        if (target != null) {
+          openLink(context, ref, target);
         }
       },
       icon: const Icon(AppIcons.openExternal, size: 16),
       label: const Text('Open article'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: ember?.accentOrange,
-        side: BorderSide(color: ember?.accentOrange ?? Colors.orange),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      ),
     );
   }
 }

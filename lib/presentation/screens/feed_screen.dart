@@ -11,6 +11,7 @@ import '../components/ember_app_bar.dart';
 import '../components/ember_chip.dart';
 import '../components/story_card.dart';
 import '../view_models/feed_view_model.dart';
+import '../view_models/settings_view_model.dart';
 
 class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
@@ -19,10 +20,15 @@ class FeedScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final feedState = ref.watch(feedViewModelProvider);
     final viewModel = ref.read(feedViewModelProvider.notifier);
+    final settings = ref.watch(settingsViewModelProvider);
 
     final appBar = EmberAppBar(
-      title: 'Ember HN',
+      title: 'Home',
       actions: [
+        IconButton(
+          icon: const Icon(AppIcons.search),
+          onPressed: () => context.go('/search'),
+        ),
         IconButton(
           icon: const Icon(AppIcons.refresh),
           onPressed: viewModel.refresh,
@@ -42,6 +48,9 @@ class FeedScreen extends ConsumerWidget {
             feedState: feedState,
             ref: ref,
             appBarHeight: appBar.totalHeight(context),
+            showDomainBadges: settings.showDomainBadges,
+            hideJobPosts: settings.hideJobPosts,
+            markReadOnScroll: settings.markReadOnScroll,
             onRefresh: viewModel.refresh,
             onMarkRead: viewModel.markRead,
             onUpvote: (itemId) async {
@@ -83,13 +92,15 @@ class _FeedTypeTabBar extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _FeedBody extends StatefulWidget {
   final FeedState feedState;
   final WidgetRef ref;
   final double appBarHeight;
+  final bool showDomainBadges;
+  final bool hideJobPosts;
+  final bool markReadOnScroll;
   final Future<void> Function() onRefresh;
   final Future<void> Function(int) onMarkRead;
   final void Function(int) onUpvote;
@@ -99,6 +110,9 @@ class _FeedBody extends StatefulWidget {
     required this.feedState,
     required this.ref,
     required this.appBarHeight,
+    required this.showDomainBadges,
+    required this.hideJobPosts,
+    required this.markReadOnScroll,
     required this.onRefresh,
     required this.onMarkRead,
     required this.onUpvote,
@@ -111,6 +125,7 @@ class _FeedBody extends StatefulWidget {
 
 class _FeedBodyState extends State<_FeedBody> {
   final _scrollController = ScrollController();
+  final _autoMarked = <int>{};
 
   @override
   void initState() {
@@ -166,9 +181,9 @@ class _FeedBodyState extends State<_FeedBody> {
 
   @override
   Widget build(BuildContext context) {
-    final asyncFeed = widget.feedState.feeds[widget.feedState.selectedType];
-    final isLoadingMore =
-        widget.feedState.isLoadingMore[widget.feedState.selectedType] ?? false;
+    final selectedType = widget.feedState.selectedType;
+    final asyncFeed = widget.feedState.feeds[selectedType];
+    final isLoadingMore = widget.feedState.isLoadingMore[selectedType] ?? false;
 
     if (asyncFeed == null) {
       return _buildSkeletonFeed();
@@ -177,38 +192,51 @@ class _FeedBodyState extends State<_FeedBody> {
     return asyncFeed.when(
       loading: () => _buildSkeletonFeed(),
       error: (error, _) => _ErrorView(error: error, onRetry: widget.onRefresh),
-      data: (result) => RefreshIndicator(
-        onRefresh: widget.onRefresh,
-        edgeOffset: widget.appBarHeight,
-        child: ListView.builder(
-          controller: _scrollController,
-          scrollCacheExtent: const ScrollCacheExtent.pixels(500),
-          padding: _listPadding(context),
-          itemCount: result.items.length + (isLoadingMore ? 3 : 0),
-          itemBuilder: (context, index) {
-            if (index >= result.items.length) {
-              return Skeletonizer(
-                child: StoryCard(item: _fakeItem, rank: index + 1),
-              );
-            }
+      data: (result) {
+        final items = widget.hideJobPosts && selectedType != FeedType.job
+            ? result.items.where((i) => i.type != 'job').toList()
+            : result.items;
 
-            final item = result.items[index];
-            final rank = index + 1;
+        return RefreshIndicator(
+          onRefresh: widget.onRefresh,
+          edgeOffset: widget.appBarHeight,
+          child: ListView.builder(
+            controller: _scrollController,
+            scrollCacheExtent: const ScrollCacheExtent.pixels(500),
+            padding: _listPadding(context),
+            itemCount: items.length + (isLoadingMore ? 3 : 0),
+            itemBuilder: (context, index) {
+              if (index >= items.length) {
+                return Skeletonizer(
+                  child: StoryCard(item: _fakeItem, rank: index + 1),
+                );
+              }
 
-            return StoryCard(
-              item: item,
-              rank: rank,
-              isRead: result.readIds.contains(item.id),
-              isUpvoted: widget.feedState.upvotedIds.contains(item.id),
-              onTap: () {
+              final item = items[index];
+              final rank = index + 1;
+
+              if (widget.markReadOnScroll &&
+                  !result.readIds.contains(item.id) &&
+                  _autoMarked.add(item.id)) {
                 widget.onMarkRead(item.id);
-                context.go('/feeds/post/${item.id}');
-              },
-              onUpvote: () => widget.onUpvote(item.id),
-            );
-          },
-        ),
-      ),
+              }
+
+              return StoryCard(
+                item: item,
+                rank: rank,
+                showDomain: widget.showDomainBadges,
+                isRead: result.readIds.contains(item.id),
+                isUpvoted: widget.feedState.upvotedIds.contains(item.id),
+                onTap: () {
+                  widget.onMarkRead(item.id);
+                  context.go('/feeds/post/${item.id}');
+                },
+                onUpvote: () => widget.onUpvote(item.id),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

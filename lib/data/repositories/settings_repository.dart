@@ -19,9 +19,6 @@ class SettingsRepository {
   static const keyOpenExternalLinks = 'open_external_links';
   static const keyReaderModeDefault = 'reader_mode_default';
   static const keyDefaultSort = 'default_sort';
-  static const keyNotifyReplies = 'notify_replies';
-  static const keyNotifyMentions = 'notify_mentions';
-  static const keyOptOutAnalytics = 'opt_out_analytics';
 
   static const _allKeys = [
     keyThemeMode,
@@ -39,9 +36,6 @@ class SettingsRepository {
     keyOpenExternalLinks,
     keyReaderModeDefault,
     keyDefaultSort,
-    keyNotifyReplies,
-    keyNotifyMentions,
-    keyOptOutAnalytics,
   ];
 
   SettingsRepository(this._dao);
@@ -66,9 +60,6 @@ class SettingsRepository {
       openExternalLinks: all[keyOpenExternalLinks] ?? 'in_app',
       readerModeDefault: _parseBool(all[keyReaderModeDefault], false),
       defaultSort: all[keyDefaultSort] ?? 'relevance',
-      notifyReplies: _parseBool(all[keyNotifyReplies], false),
-      notifyMentions: _parseBool(all[keyNotifyMentions], false),
-      optOutAnalytics: _parseBool(all[keyOptOutAnalytics], false),
     );
   }
 

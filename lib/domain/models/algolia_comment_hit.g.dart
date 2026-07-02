@@ -14,10 +14,10 @@ AlgoliaCommentHit _$AlgoliaCommentHitFromJson(Map<String, dynamic> json) =>
       storyId: (json['story_id'] as num).toInt(),
       storyTitle: json['story_title'] as String?,
       storyUrl: json['story_url'] as String?,
-      parentId: (json['parent_id'] as num).toInt(),
+      parentId: (json['parent_id'] as num?)?.toInt(),
       createdAt: json['created_at'] as String,
       createdAtI: (json['created_at_i'] as num).toInt(),
-      points: (json['points'] as num).toInt(),
+      points: (json['points'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$AlgoliaCommentHitToJson(AlgoliaCommentHit instance) =>

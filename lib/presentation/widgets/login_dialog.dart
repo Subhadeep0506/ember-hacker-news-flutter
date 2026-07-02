@@ -112,24 +112,14 @@ class _LoginDialogContentState extends State<_LoginDialogContent> {
           const SizedBox(height: 20),
           TextField(
             controller: _usernameController,
-            decoration: InputDecoration(
-              labelText: 'Username',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            decoration: const InputDecoration(labelText: 'Username'),
             textInputAction: TextInputAction.next,
             enabled: !_isLoading,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _passwordController,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
             textInputAction: TextInputAction.done,
             enabled: !_isLoading,
@@ -154,11 +144,7 @@ class _LoginDialogContentState extends State<_LoginDialogContent> {
                 : const Icon(AppIcons.login, size: 18),
             label: const Text('Sign in'),
             style: FilledButton.styleFrom(
-              backgroundColor: ember?.accentOrange,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              minimumSize: const Size.fromHeight(52),
             ),
           ),
         ],

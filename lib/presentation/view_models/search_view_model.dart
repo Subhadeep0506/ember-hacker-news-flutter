@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/di/providers.dart';
 import '../../domain/models/models.dart';
+import 'settings_view_model.dart';
 
 enum SearchSort {
   relevance,
@@ -19,6 +20,10 @@ enum SearchSort {
         return 'Newest';
     }
   }
+
+  /// Maps the persisted "Default sort" setting ('relevance' / 'newest').
+  static SearchSort fromSettingsValue(String value) =>
+      value == 'newest' ? SearchSort.date : SearchSort.relevance;
 }
 
 class SearchState {
@@ -64,7 +69,20 @@ class SearchViewModel extends Notifier<SearchState> {
   @override
   SearchState build() {
     ref.onDispose(() => _debounceTimer?.cancel());
+    Future.microtask(_applyDefaultSort);
     return const SearchState();
+  }
+
+  Future<void> _applyDefaultSort() async {
+    await ref.read(settingsViewModelProvider.notifier).ensureLoaded();
+    // Only adopt the default before the user has run or re-sorted a search.
+    if (state.query.isEmpty && state.results == null) {
+      state = state.copyWith(
+        sort: SearchSort.fromSettingsValue(
+          ref.read(settingsViewModelProvider).defaultSort,
+        ),
+      );
+    }
   }
 
   void updateQuery(String query) {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
 import '../../utils/url_utils.dart';
+import '../view_models/post_detail_view_model.dart';
 import 'post_action_bar.dart';
 import 'post_header.dart';
 
@@ -27,6 +29,13 @@ class SliverStickyPostHeader extends StatelessWidget {
   final double width;
   final VoidCallback? onUpvote;
   final VoidCallback? onReply;
+  final bool isUpvoted;
+  final bool isVoting;
+  final CommentSort commentSort;
+  final VoidCallback? onSortNewest;
+  final VoidCallback? onSortOldest;
+  final VoidCallback? onCollapseAll;
+  final VoidCallback? onExpandAll;
 
   const SliverStickyPostHeader({
     super.key,
@@ -34,6 +43,13 @@ class SliverStickyPostHeader extends StatelessWidget {
     required this.width,
     this.onUpvote,
     this.onReply,
+    this.isUpvoted = false,
+    this.isVoting = false,
+    this.commentSort = CommentSort.oldestFirst,
+    this.onSortNewest,
+    this.onSortOldest,
+    this.onCollapseAll,
+    this.onExpandAll,
   });
 
   @override
@@ -46,6 +62,13 @@ class SliverStickyPostHeader extends StatelessWidget {
         titleStyle: postTitleStyle(Theme.of(context).textTheme),
         onUpvote: onUpvote,
         onReply: onReply,
+        isUpvoted: isUpvoted,
+        isVoting: isVoting,
+        commentSort: commentSort,
+        onSortNewest: onSortNewest,
+        onSortOldest: onSortOldest,
+        onCollapseAll: onCollapseAll,
+        onExpandAll: onExpandAll,
       ),
     );
   }
@@ -57,6 +80,13 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TextStyle? titleStyle;
   final VoidCallback? onUpvote;
   final VoidCallback? onReply;
+  final bool isUpvoted;
+  final bool isVoting;
+  final CommentSort commentSort;
+  final VoidCallback? onSortNewest;
+  final VoidCallback? onSortOldest;
+  final VoidCallback? onCollapseAll;
+  final VoidCallback? onExpandAll;
   final double _expandedTitleHeight;
 
   _StickyPostHeaderDelegate({
@@ -65,7 +95,18 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.titleStyle,
     this.onUpvote,
     this.onReply,
-  }) : _expandedTitleHeight = _measureTitleHeight(item.title, titleStyle, width);
+    this.isUpvoted = false,
+    this.isVoting = false,
+    this.commentSort = CommentSort.oldestFirst,
+    this.onSortNewest,
+    this.onSortOldest,
+    this.onCollapseAll,
+    this.onExpandAll,
+  }) : _expandedTitleHeight = _measureTitleHeight(
+         item.title,
+         titleStyle,
+         width,
+       );
 
   static double _measureTitleHeight(
     String? title,
@@ -105,8 +146,20 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
       collapsed: t,
       child: Column(
         children: [
-          Expanded(child: _TitleRegion(item: item, collapsed: t)),
-          PostActionBar(onUpvote: onUpvote, onReply: onReply),
+          Expanded(
+            child: _TitleRegion(item: item, collapsed: t),
+          ),
+          PostActionBar(
+            onUpvote: onUpvote,
+            onReply: onReply,
+            isUpvoted: isUpvoted,
+            isVoting: isVoting,
+            commentSort: commentSort,
+            onSortNewest: onSortNewest,
+            onSortOldest: onSortOldest,
+            onCollapseAll: onCollapseAll,
+            onExpandAll: onExpandAll,
+          ),
         ],
       ),
     );
@@ -116,12 +169,16 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_StickyPostHeaderDelegate oldDelegate) {
     return item.id != oldDelegate.item.id ||
         item.title != oldDelegate.item.title ||
-        width != oldDelegate.width;
+        width != oldDelegate.width ||
+        isUpvoted != oldDelegate.isUpvoted ||
+        isVoting != oldDelegate.isVoting ||
+        commentSort != oldDelegate.commentSort;
   }
 }
 
 /// Opaque background so scrolling comments never bleed through the pinned bar,
-/// with a bottom divider + subtle shadow that fade in as the header collapses.
+/// matching the scaffold colour so it continues seamlessly from the hero's
+/// rounded lip (see [PostSheetLip]). A bottom divider fades in on collapse.
 class _HeaderSurface extends StatelessWidget {
   final double collapsed;
   final Widget child;
@@ -131,21 +188,17 @@ class _HeaderSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final ember = Theme.of(context).extension<EmberThemeExtension>();
+    final surface = ember?.scaffoldBackground ?? scheme.surface;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: scheme.surface,
+        color: surface,
         border: Border(
           bottom: BorderSide(
             color: scheme.outlineVariant.withAlpha((collapsed * 60).round()),
           ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((collapsed * 20).round()),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: child,
     );
@@ -209,9 +262,9 @@ class _CondensedTitle extends StatelessWidget {
         title,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }

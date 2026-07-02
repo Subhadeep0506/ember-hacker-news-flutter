@@ -27,13 +27,10 @@ class EmberChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? ember?.accentOrange : Colors.transparent,
+          color: selected
+              ? ember?.accentOrange
+              : ember?.chipUnselectedBackground,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? ember?.accentOrange ?? colorScheme.primary
-                : colorScheme.outlineVariant.withAlpha(80),
-          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

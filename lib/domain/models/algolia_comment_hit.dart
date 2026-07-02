@@ -11,10 +11,12 @@ class AlgoliaCommentHit {
   final int storyId;
   final String? storyTitle;
   final String? storyUrl;
-  final int parentId;
+  // Nullable: HN Algolia returns null for top-level parents and for comment
+  // points (comments carry no score).
+  final int? parentId;
   final String createdAt;
   final int createdAtI;
-  final int points;
+  final int? points;
 
   const AlgoliaCommentHit({
     required this.objectId,
@@ -23,10 +25,10 @@ class AlgoliaCommentHit {
     required this.storyId,
     this.storyTitle,
     this.storyUrl,
-    required this.parentId,
+    this.parentId,
     required this.createdAt,
     required this.createdAtI,
-    required this.points,
+    this.points,
   });
 
   factory AlgoliaCommentHit.fromJson(Map<String, dynamic> json) =>

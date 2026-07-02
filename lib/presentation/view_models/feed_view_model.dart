@@ -4,6 +4,7 @@ import '../../config/di/providers.dart';
 import '../../data/repositories/feed_repository.dart';
 import '../../domain/models/models.dart';
 import 'auth_view_model.dart';
+import 'settings_view_model.dart';
 
 class FeedState {
   final FeedType selectedType;
@@ -48,8 +49,17 @@ class FeedState {
 class FeedViewModel extends Notifier<FeedState> {
   @override
   FeedState build() {
-    Future.microtask(() => _loadFeed(FeedType.top));
+    Future.microtask(_loadInitialFeed);
     return const FeedState();
+  }
+
+  Future<void> _loadInitialFeed() async {
+    await ref.read(settingsViewModelProvider.notifier).ensureLoaded();
+    final defaultType = FeedType.fromSettingsValue(
+      ref.read(settingsViewModelProvider).defaultFeedType,
+    );
+    state = state.copyWith(selectedType: defaultType);
+    await _loadFeed(defaultType);
   }
 
   void selectFeedType(FeedType type) {

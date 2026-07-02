@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/settings_state.dart';
+import '../../utils/link_launcher.dart';
+import '../components/ember_avatar_tile.dart';
 import '../components/ember_chip.dart';
+import '../components/ember_dropdown.dart';
+import '../components/ember_icon_button.dart';
+import '../components/ember_segmented_control.dart';
 import '../view_models/auth_view_model.dart';
 import '../view_models/settings_view_model.dart';
 
@@ -43,8 +47,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _loginError = null;
     });
 
-    final success =
-        await ref.read(authViewModelProvider.notifier).login(username, password);
+    final success = await ref
+        .read(authViewModelProvider.notifier)
+        .login(username, password);
 
     if (!mounted) return;
 
@@ -72,37 +77,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final ember = Theme.of(context).extension<EmberThemeExtension>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 8,
           bottom: MediaQuery.of(context).padding.bottom + 72,
         ),
         children: [
-          _buildAccountSection(auth, ember),
-          _buildAppearanceSection(settings, vm, ember),
-          _buildFeedSection(settings, vm, ember),
-          _buildCommentsSection(settings, vm, ember),
-          _buildReadingSection(settings, vm, ember),
-          _buildSearchSection(settings, vm, ember),
-          _buildNotificationsSection(settings, vm, ember, auth.isLoggedIn),
-          _buildPrivacySection(settings, vm, ember),
-          _buildDataSection(vm, ember),
-          _buildAboutSection(ember),
-          const SizedBox(height: 16),
+          _SettingsBanner(auth: auth, settings: settings, vm: vm, ember: ember),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Ember is an independent client for Hacker News. Not affiliated with Y Combinator.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: ember?.metadataColor,
-              ),
-              textAlign: TextAlign.center,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildAccountSection(auth, ember),
+                _buildAppearanceSection(settings, vm, ember),
+                _buildFeedSection(settings, vm, ember),
+                _buildCommentsSection(settings, vm, ember),
+                _buildReadingSection(settings, vm, ember),
+                _buildSearchSection(settings, vm, ember),
+                _buildDataSection(vm, ember),
+                _buildAboutSection(ember),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    'Ember is an independent client for Hacker News. Not affiliated with Y Combinator.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: ember?.metadataColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
-          const SizedBox(height: 32),
         ],
       ),
     );
@@ -110,10 +121,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // ─── ACCOUNT ────────────────────────────────────────────────────────
 
-  Widget _buildAccountSection(
-    dynamic auth,
-    EmberThemeExtension? ember,
-  ) {
+  Widget _buildAccountSection(dynamic auth, EmberThemeExtension? ember) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,19 +164,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                Text(
-                  'Logged in',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: ember?.metadataColor,
+                const SizedBox(height: 2),
+                GestureDetector(
+                  onTap: () => openLink(
+                    context,
+                    ref,
+                    'https://news.ycombinator.com/user?id=${auth.username}',
+                  ),
+                  child: Text(
+                    'View HN profile →',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: ember?.accentOrange,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          OutlinedButton(
-            onPressed: () =>
-                ref.read(authViewModelProvider.notifier).logout(),
-            child: const Text('Logout'),
+          OutlinedButton.icon(
+            onPressed: () => ref.read(authViewModelProvider.notifier).logout(),
+            icon: const Icon(AppIcons.login, size: 16),
+            label: const Text('Sign out'),
           ),
         ],
       ),
@@ -210,24 +227,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _usernameController,
-            decoration: InputDecoration(
-              labelText: 'HN username',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            decoration: const InputDecoration(labelText: 'HN username'),
             textInputAction: TextInputAction.next,
             enabled: !_isLoginLoading,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _passwordController,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
             textInputAction: TextInputAction.done,
             enabled: !_isLoginLoading,
@@ -255,11 +262,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : const Icon(AppIcons.login, size: 18),
             label: const Text('Sign in'),
             style: FilledButton.styleFrom(
-              backgroundColor: ember?.accentOrange,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              minimumSize: const Size.fromHeight(52),
             ),
           ),
         ],
@@ -280,13 +283,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _SectionHeader(icon: AppIcons.palette, label: 'APPEARANCE'),
         _SettingsCard(
           children: [
-            _ChipRow(
+            _SegmentedRow(
               title: 'Theme',
               subtitle: 'System follows your device.',
-              options: const [
-                (value: 'auto', label: 'Auto', icon: AppIcons.themeSystem),
-                (value: 'dark', label: 'Dark', icon: AppIcons.themeDark),
-                (value: 'light', label: 'Light', icon: AppIcons.themeLight),
+              segments: const [
+                EmberSegment(
+                  value: 'auto',
+                  label: 'Auto',
+                  icon: AppIcons.themeSystem,
+                ),
+                EmberSegment(
+                  value: 'dark',
+                  label: 'Dark',
+                  icon: AppIcons.themeDark,
+                ),
+                EmberSegment(
+                  value: 'light',
+                  label: 'Light',
+                  icon: AppIcons.themeLight,
+                ),
               ],
               selected: settings.themeMode,
               onSelected: vm.setThemeMode,
@@ -311,11 +326,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ember: ember,
             ),
             const Divider(height: 0),
-            _ChipRow(
+            _SegmentedRow(
               title: 'Density',
-              options: const [
-                (value: 'cozy', label: 'Cozy', icon: null),
-                (value: 'compact', label: 'Compact', icon: null),
+              segments: const [
+                EmberSegment(value: 'cozy', label: 'Cozy'),
+                EmberSegment(value: 'compact', label: 'Compact'),
               ],
               selected: settings.density,
               onSelected: vm.setDensity,
@@ -347,15 +362,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _SectionHeader(icon: AppIcons.feedSection, label: 'FEED'),
         _SettingsCard(
           children: [
-            _ChipRow(
+            _DropdownRow(
               title: 'Default feed',
-              options: const [
-                (value: 'top', label: 'Top', icon: null),
-                (value: 'new', label: 'New', icon: null),
-                (value: 'best', label: 'Best', icon: null),
-                (value: 'ask', label: 'Ask', icon: null),
-                (value: 'show', label: 'Show', icon: null),
-                (value: 'job', label: 'Jobs', icon: null),
+              items: const [
+                EmberDropdownItem(value: 'top', label: 'Top'),
+                EmberDropdownItem(value: 'new', label: 'New'),
+                EmberDropdownItem(value: 'best', label: 'Best'),
+                EmberDropdownItem(value: 'ask', label: 'Ask HN'),
+                EmberDropdownItem(value: 'show', label: 'Show HN'),
+                EmberDropdownItem(value: 'job', label: 'Jobs'),
               ],
               selected: settings.defaultFeedType,
               onSelected: vm.setDefaultFeedType,
@@ -394,18 +409,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     SettingsViewModel vm,
     EmberThemeExtension? ember,
   ) {
-    final depthLabel =
-        settings.autoCollapseDepth == 0
-            ? 'Off'
-            : '${settings.autoCollapseDepth}';
+    final depthLabel = settings.autoCollapseDepth == 0
+        ? 'Off'
+        : '${settings.autoCollapseDepth}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(
-          icon: AppIcons.comment,
-          label: 'COMMENTS',
-        ),
+        _SectionHeader(icon: AppIcons.comment, label: 'COMMENTS'),
         _SettingsCard(
           children: [
             _SliderRow(
@@ -461,23 +472,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
-                  DropdownButton<String>(
+                  EmberDropdown<String>(
                     value: settings.openExternalLinks,
-                    underline: const SizedBox.shrink(),
-                    borderRadius: BorderRadius.circular(12),
                     items: const [
-                      DropdownMenuItem(
-                        value: 'in_app',
-                        child: Text('In-app'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'external',
-                        child: Text('External'),
-                      ),
+                      EmberDropdownItem(value: 'in_app', label: 'In-app'),
+                      EmberDropdownItem(value: 'external', label: 'External'),
                     ],
-                    onChanged: (v) {
-                      if (v != null) vm.setOpenExternalLinks(v);
-                    },
+                    onChanged: vm.setOpenExternalLinks,
                   ),
                 ],
               ),
@@ -517,69 +518,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
               selected: settings.defaultSort,
               onSelected: vm.setDefaultSort,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ─── NOTIFICATIONS ──────────────────────────────────────────────────
-
-  Widget _buildNotificationsSection(
-    SettingsState settings,
-    SettingsViewModel vm,
-    EmberThemeExtension? ember,
-    bool isLoggedIn,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          icon: AppIcons.notifications,
-          label: 'NOTIFICATIONS',
-        ),
-        _SettingsCard(
-          children: [
-            _ToggleRow(
-              title: 'Replies to my comments',
-              subtitle: isLoggedIn ? null : 'Requires sign-in.',
-              value: settings.notifyReplies,
-              onChanged: isLoggedIn ? vm.setNotifyReplies : null,
-              ember: ember,
-            ),
-            const Divider(height: 0),
-            _ToggleRow(
-              title: 'Mentions',
-              subtitle: 'When someone @-mentions you.',
-              value: settings.notifyMentions,
-              onChanged: isLoggedIn ? vm.setNotifyMentions : null,
-              ember: ember,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ─── PRIVACY ────────────────────────────────────────────────────────
-
-  Widget _buildPrivacySection(
-    SettingsState settings,
-    SettingsViewModel vm,
-    EmberThemeExtension? ember,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(icon: AppIcons.shield, label: 'PRIVACY'),
-        _SettingsCard(
-          children: [
-            _ToggleRow(
-              title: 'Opt out of anonymous analytics',
-              value: settings.optOutAnalytics,
-              onChanged: vm.setOptOutAnalytics,
-              ember: ember,
             ),
           ],
         ),
@@ -642,8 +580,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       FilledButton(
                         onPressed: () => Navigator.of(ctx).pop(true),
                         style: FilledButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.error,
+                          backgroundColor: Theme.of(context).colorScheme.error,
                         ),
                         child: const Text('Reset'),
                       ),
@@ -711,9 +648,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: 18,
                 color: ember?.metadataColor,
               ),
-              onTap: () => _launchUrl(
-                'https://github.com',
-              ),
+              onTap: () => _launchUrl('https://github.com'),
             ),
             const Divider(height: 0),
             _TappableRow(
@@ -723,9 +658,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: 18,
                 color: ember?.metadataColor,
               ),
-              onTap: () => _launchUrl(
-                'mailto:feedback@ember-hn.app',
-              ),
+              onTap: () => _launchUrl('mailto:feedback@ember-hn.app'),
             ),
           ],
         ),
@@ -734,14 +667,127 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await openLink(context, ref, url);
   }
 }
 
 // ─── HELPER WIDGETS ─────────────────────────────────────────────────────
+
+/// Orange gradient banner atop the settings screen: an overlapping avatar tile,
+/// the account name (or "Guest"), a short subtitle, and quick actions (profile
+/// shortcut + a light/dark theme toggle).
+class _SettingsBanner extends ConsumerWidget {
+  final dynamic auth;
+  final SettingsState settings;
+  final SettingsViewModel vm;
+  final EmberThemeExtension? ember;
+
+  const _SettingsBanner({
+    required this.auth,
+    required this.settings,
+    required this.vm,
+    required this.ember,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final accent = ember?.accentOrange ?? Theme.of(context).colorScheme.primary;
+    final isLoggedIn = auth.isLoggedIn == true;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final name = isLoggedIn ? (auth.username ?? '') : 'Guest';
+    final subtitle = isLoggedIn
+        ? 'Signed in via Hacker News. Your upvotes and comments sync to HN.'
+        : 'Sign in with Hacker News to upvote, comment and submit stories.';
+
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 196,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 148,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.lerp(accent, Colors.white, 0.15) ?? accent,
+                        accent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                bottom: false,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        EmberIconButton(
+                          icon: AppIcons.user,
+                          tooltip: 'HN profile',
+                          color: Colors.white,
+                          background: Colors.black.withAlpha(45),
+                          onTap: isLoggedIn
+                              ? () => openLink(
+                                  context,
+                                  ref,
+                                  'https://news.ycombinator.com/user?id=${auth.username}',
+                                )
+                              : null,
+                        ),
+                        EmberIconButton(
+                          icon: isDark
+                              ? AppIcons.themeLight
+                              : AppIcons.themeDark,
+                          tooltip: 'Toggle theme',
+                          color: Colors.white,
+                          background: Colors.black.withAlpha(45),
+                          onTap: () =>
+                              vm.setThemeMode(isDark ? 'light' : 'dark'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              EmberAvatarTile(icon: AppIcons.user),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          name,
+          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: textTheme.bodySmall?.copyWith(color: ember?.metadataColor),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _SectionHeader extends StatelessWidget {
   final IconData icon;
@@ -784,15 +830,10 @@ class _SettingsCard extends StatelessWidget {
 
     return Card(
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: ember?.storyCardBackground,
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: children,
-      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: children),
     );
   }
 }
@@ -849,16 +890,121 @@ class _ToggleRow extends StatelessWidget {
 
 typedef _ChipOption = ({String value, String label, IconData? icon});
 
-class _ChipRow extends StatelessWidget {
+/// A settings row whose control is an [EmberSegmentedControl] on the trailing
+/// edge, with the label (and optional subtitle) on the left.
+class _SegmentedRow extends StatelessWidget {
   final String title;
   final String? subtitle;
+  final List<EmberSegment<String>> segments;
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  const _SegmentedRow({
+    required this.title,
+    this.subtitle,
+    required this.segments,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: _RowLabel(title: title, subtitle: subtitle),
+          ),
+          const SizedBox(width: 12),
+          EmberSegmentedControl<String>(
+            segments: segments,
+            selected: selected,
+            onChanged: onSelected,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A settings row whose control is an [EmberDropdown] on the trailing edge.
+class _DropdownRow extends StatelessWidget {
+  final String title;
+  final List<EmberDropdownItem<String>> items;
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  const _DropdownRow({
+    required this.title,
+    required this.items,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(child: _RowLabel(title: title)),
+          const SizedBox(width: 12),
+          EmberDropdown<String>(
+            items: items,
+            value: selected,
+            onChanged: onSelected,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shared title + optional subtitle block for settings rows.
+class _RowLabel extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+
+  const _RowLabel({required this.title, this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    final ember = Theme.of(context).extension<EmberThemeExtension>();
+    final sub = subtitle;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+        ),
+        if (sub != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              sub,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: ember?.metadataColor),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ChipRow extends StatelessWidget {
+  final String title;
   final List<_ChipOption> options;
   final String selected;
   final ValueChanged<String> onSelected;
 
   const _ChipRow({
     required this.title,
-    this.subtitle,
     required this.options,
     required this.selected,
     required this.onSelected,
@@ -866,41 +1012,12 @@ class _ChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ember = Theme.of(context).extension<EmberThemeExtension>();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (subtitle != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          subtitle!,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: ember?.metadataColor,
-                              ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          _RowLabel(title: title),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -954,16 +1071,16 @@ class _SliderRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
               const Spacer(),
               Text(
                 valueLabel,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: ember?.metadataColor,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: ember?.metadataColor),
               ),
             ],
           ),
@@ -971,8 +1088,7 @@ class _SliderRow extends StatelessWidget {
             data: SliderThemeData(
               activeTrackColor: ember?.accentOrange,
               thumbColor: ember?.accentOrange,
-              inactiveTrackColor:
-                  ember?.metadataColor.withAlpha(40),
+              inactiveTrackColor: ember?.metadataColor.withAlpha(40),
               overlayColor: ember?.accentOrange.withAlpha(30),
             ),
             child: Slider(
@@ -1013,9 +1129,9 @@ class _TappableRow extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: textColor,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: textColor),
               ),
             ),
             ?trailing,

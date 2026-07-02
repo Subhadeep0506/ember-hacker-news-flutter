@@ -19,11 +19,6 @@ class SettingsState {
 
   final String defaultSort;
 
-  final bool notifyReplies;
-  final bool notifyMentions;
-
-  final bool optOutAnalytics;
-
   const SettingsState({
     this.themeMode = 'auto',
     this.textSizePercent = 100,
@@ -40,9 +35,6 @@ class SettingsState {
     this.openExternalLinks = 'in_app',
     this.readerModeDefault = false,
     this.defaultSort = 'relevance',
-    this.notifyReplies = false,
-    this.notifyMentions = false,
-    this.optOutAnalytics = false,
   });
 
   SettingsState copyWith({
@@ -61,9 +53,6 @@ class SettingsState {
     String? openExternalLinks,
     bool? readerModeDefault,
     String? defaultSort,
-    bool? notifyReplies,
-    bool? notifyMentions,
-    bool? optOutAnalytics,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
@@ -81,9 +70,6 @@ class SettingsState {
       openExternalLinks: openExternalLinks ?? this.openExternalLinks,
       readerModeDefault: readerModeDefault ?? this.readerModeDefault,
       defaultSort: defaultSort ?? this.defaultSort,
-      notifyReplies: notifyReplies ?? this.notifyReplies,
-      notifyMentions: notifyMentions ?? this.notifyMentions,
-      optOutAnalytics: optOutAnalytics ?? this.optOutAnalytics,
     );
   }
 }

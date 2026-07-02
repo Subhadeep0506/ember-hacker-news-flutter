@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
+import '../../config/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 
 class EmberAppBar extends StatelessWidget {
@@ -31,10 +32,9 @@ class EmberAppBar extends StatelessWidget {
 
     // Web cannot blur behind native HTML image layers, so use an opaque
     // surface there; mobile gets a real frosted-glass BackdropFilter.
+    final surface = ember?.scaffoldBackground ?? colorScheme.surface;
     final decoration = BoxDecoration(
-      color: kIsWeb
-          ? colorScheme.surface
-          : colorScheme.surface.withAlpha(200),
+      color: kIsWeb ? surface : surface.withAlpha(200),
       border: Border(
         bottom: BorderSide(
           color: colorScheme.outlineVariant.withAlpha(60),
@@ -51,29 +51,33 @@ class EmberAppBar extends StatelessWidget {
         children: [
           SizedBox(
             height: kToolbarHeight,
-            child: NavigationToolbar(
-              middle: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Ember ',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: ember?.accentOrange,
-                      ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: ember?.accentOrange.withAlpha(30),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    TextSpan(
-                      text: 'HN',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    child: Icon(
+                      AppIcons.flame,
+                      size: 22,
+                      color: ember?.accentOrange,
                     ),
-                  ],
-                ),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: actions ?? [],
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Spacer(),
+                  ...?actions,
+                ],
               ),
             ),
           ),

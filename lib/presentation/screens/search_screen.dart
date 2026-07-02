@@ -50,7 +50,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final ember = Theme.of(context).extension<EmberThemeExtension>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Search')),
+      appBar: AppBar(
+        title: Text(
+          'Search',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ),
       body: Column(
         children: [
           _SearchField(
@@ -117,9 +124,6 @@ class _SearchField extends StatelessWidget {
               );
             },
           ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),
@@ -131,10 +135,7 @@ class _SortChips extends StatelessWidget {
   final SearchSort selectedSort;
   final ValueChanged<SearchSort> onSortChanged;
 
-  const _SortChips({
-    required this.selectedSort,
-    required this.onSortChanged,
-  });
+  const _SortChips({required this.selectedSort, required this.onSortChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -205,9 +206,9 @@ class _SearchResults extends StatelessWidget {
             child: Text(
               'No results found',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context)
-                    .extension<EmberThemeExtension>()
-                    ?.metadataColor,
+                color: Theme.of(
+                  context,
+                ).extension<EmberThemeExtension>()?.metadataColor,
               ),
             ),
           );
@@ -239,9 +240,9 @@ class _EmptyHint extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Search Hacker News',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: ember?.metadataColor,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: ember?.metadataColor),
           ),
         ],
       ),

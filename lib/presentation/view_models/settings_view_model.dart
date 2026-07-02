@@ -6,11 +6,17 @@ import '../../data/repositories/settings_repository.dart';
 import '../../domain/models/settings_state.dart';
 
 class SettingsViewModel extends Notifier<SettingsState> {
+  Future<void>? _loading;
+
   @override
   SettingsState build() {
-    Future.microtask(_loadSettings);
+    _loading = _loadSettings();
     return const SettingsState();
   }
+
+  /// Completes once persisted settings have been hydrated, so consumers that
+  /// need a setting at startup (e.g. the default feed) can await it.
+  Future<void> ensureLoaded() => _loading ?? Future<void>.value();
 
   Future<void> _loadSettings() async {
     try {
@@ -101,21 +107,6 @@ class SettingsViewModel extends Notifier<SettingsState> {
     await _save(SettingsRepository.keyDefaultSort, sort);
   }
 
-  Future<void> setNotifyReplies(bool enabled) async {
-    state = state.copyWith(notifyReplies: enabled);
-    await _save(SettingsRepository.keyNotifyReplies, '$enabled');
-  }
-
-  Future<void> setNotifyMentions(bool enabled) async {
-    state = state.copyWith(notifyMentions: enabled);
-    await _save(SettingsRepository.keyNotifyMentions, '$enabled');
-  }
-
-  Future<void> setOptOutAnalytics(bool enabled) async {
-    state = state.copyWith(optOutAnalytics: enabled);
-    await _save(SettingsRepository.keyOptOutAnalytics, '$enabled');
-  }
-
   Future<void> clearReadHistory() async {
     try {
       final dao = ref.read(readHistoryDaoProvider);
@@ -152,4 +143,43 @@ final themeModeProvider = Provider<ThemeMode>((ref) {
     default:
       return ThemeMode.system;
   }
+});
+
+/// Global text scale derived from the "Text size" setting (100% => 1.0).
+final textScaleProvider = Provider<double>((ref) {
+  final percent = ref.watch(
+    settingsViewModelProvider.select((s) => s.textSizePercent),
+  );
+  return (percent / 100).clamp(0.5, 2.0);
+});
+
+/// Layout density derived from the "Density" setting.
+final visualDensityProvider = Provider<VisualDensity>((ref) {
+  final density = ref.watch(
+    settingsViewModelProvider.select((s) => s.density),
+  );
+  return density == 'compact'
+      ? VisualDensity.compact
+      : VisualDensity.standard;
+});
+
+/// Whether animations should be minimised ("Reduce motion").
+final reduceMotionProvider = Provider<bool>((ref) {
+  return ref.watch(settingsViewModelProvider.select((s) => s.reduceMotion));
+});
+
+/// Whether taps on external links open the in-app browser (`in_app`) or the
+/// system browser (`external`).
+final openInAppProvider = Provider<bool>((ref) {
+  final mode = ref.watch(
+    settingsViewModelProvider.select((s) => s.openExternalLinks),
+  );
+  return mode == 'in_app';
+});
+
+/// Whether the in-app browser should attempt reader mode by default.
+final readerModeProvider = Provider<bool>((ref) {
+  return ref.watch(
+    settingsViewModelProvider.select((s) => s.readerModeDefault),
+  );
 });

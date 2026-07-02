@@ -6,6 +6,7 @@ class EmberActionButton extends StatelessWidget {
   final Color? color;
   final VoidCallback? onTap;
   final double iconSize;
+  final bool isLoading;
 
   const EmberActionButton({
     super.key,
@@ -14,6 +15,7 @@ class EmberActionButton extends StatelessWidget {
     this.color,
     this.onTap,
     this.iconSize = 20,
+    this.isLoading = false,
   });
 
   @override
@@ -22,14 +24,27 @@ class EmberActionButton extends StatelessWidget {
         color ?? Theme.of(context).colorScheme.onSurfaceVariant;
 
     return InkWell(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: iconSize, color: effectiveColor),
+            if (isLoading)
+              SizedBox(
+                width: iconSize,
+                height: iconSize,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: effectiveColor,
+                  ),
+                ),
+              )
+            else
+              Icon(icon, size: iconSize, color: effectiveColor),
             const SizedBox(height: 4),
             Text(
               label,

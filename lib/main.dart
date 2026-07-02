@@ -16,14 +16,27 @@ class EmberApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final density = ref.watch(visualDensityProvider);
+    final textScale = ref.watch(textScaleProvider);
+    final reduceMotion = ref.watch(reduceMotionProvider);
 
     return MaterialApp.router(
       title: 'Ember HN',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(density: density),
+      darkTheme: AppTheme.dark(density: density),
       themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        return MediaQuery(
+          data: media.copyWith(
+            textScaler: TextScaler.linear(textScale),
+            disableAnimations: reduceMotion || media.disableAnimations,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

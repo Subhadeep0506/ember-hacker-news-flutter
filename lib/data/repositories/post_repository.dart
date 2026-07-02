@@ -15,10 +15,12 @@ class PostRepository {
 
   Future<PostDetail> getPost(int id) async {
     final response = await _apiService.getItem(id);
+    // Dead/deleted comments are retained here; visibility is decided at render
+    // time by the "Show dead & deleted" setting (see flattenComments).
     final comments = (response.children ?? [])
         .whereType<Map<String, dynamic>>()
         .map((c) => Comment.fromJson(c))
-        .where((c) => !c.deleted && !c.dead && c.id != 0)
+        .where((c) => c.id != 0)
         .toList();
     return PostDetail(item: response, comments: comments);
   }

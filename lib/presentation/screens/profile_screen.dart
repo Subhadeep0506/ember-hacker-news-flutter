@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
-import '../components/ember_chip.dart';
+import '../../utils/link_launcher.dart';
+import '../components/ember_avatar_tile.dart';
+import '../components/ember_icon_button.dart';
 import '../components/search_story_card.dart';
 import '../view_models/profile_view_model.dart';
 import '../widgets/profile_comment_card.dart';
@@ -38,159 +39,185 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final ember = Theme.of(context).extension<EmberThemeExtension>();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(),
-        title: const Text('Profile'),
-        actions: [
-          IconButton(icon: const Icon(AppIcons.share), onPressed: () {}),
-        ],
-      ),
-      body: state.user.when(
-        loading: () => _ProfileSkeleton(ember: ember),
-        error: (error, _) => _ErrorView(
-          error: error,
-          onRetry: () => viewModel.loadUser(widget.username),
-        ),
-        data: (user) => Column(
-          children: [
-            _ProfileHeader(user: user, ember: ember),
-            _TabBar(
-              selectedTab: state.selectedTab,
-              onTabChanged: viewModel.selectTab,
+      body: Stack(
+        children: [
+          state.user.when(
+            loading: () => _ProfileSkeleton(ember: ember),
+            error: (error, _) => _ErrorView(
+              error: error,
+              onRetry: () => viewModel.loadUser(widget.username),
             ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: viewModel.refresh,
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    if (state.selectedTab == 0)
-                      _SubmissionsList(
-                        submissions: state.submissions,
-                        onRetry: viewModel.loadSubmissions,
-                      )
-                    else
-                      _CommentsList(
-                        comments: state.comments,
-                        onRetry: viewModel.loadComments,
-                      ),
-                    const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
-                  ],
-                ),
+            data: (user) => RefreshIndicator(
+              onRefresh: viewModel.refresh,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _ProfileHeader(user: user, ember: ember),
+                  ),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _TabBarDelegate(
+                      selectedTab: state.selectedTab,
+                      onTabChanged: viewModel.selectTab,
+                    ),
+                  ),
+                  if (state.selectedTab == 0)
+                    _SubmissionsList(
+                      submissions: state.submissions,
+                      onRetry: viewModel.loadSubmissions,
+                    )
+                  else
+                    _CommentsList(
+                      comments: state.comments,
+                      onRetry: viewModel.loadComments,
+                    ),
+                  const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  EmberIconButton(
+                    icon: AppIcons.back,
+                    tooltip: 'Back',
+                    color: Colors.white,
+                    background: Colors.black.withAlpha(45),
+                    onTap: () => context.pop(),
+                  ),
+                  EmberIconButton(
+                    icon: AppIcons.share,
+                    tooltip: 'Share',
+                    color: Colors.white,
+                    background: Colors.black.withAlpha(45),
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ProfileHeader extends StatelessWidget {
+class _ProfileHeader extends ConsumerWidget {
   final HnUser user;
   final EmberThemeExtension? ember;
 
   const _ProfileHeader({required this.user, required this.ember});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final accent = ember?.accentOrange ?? colorScheme.primary;
     final joinDate = DateTime.fromMillisecondsSinceEpoch(
       user.created.toInt() * 1000,
     );
+    final about = _stripHtml(user.about ?? '');
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      children: [
+        // Gradient banner with the avatar tile overlapping its lower edge.
+        SizedBox(
+          width: double.infinity,
+          height: 200,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            clipBehavior: Clip.none,
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: ember?.accentOrange,
-                child: Text(
-                  user.id[0].toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 22,
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 152,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.lerp(accent, Colors.white, 0.15) ?? accent,
+                        accent,
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.id,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    GestureDetector(
-                      onTap: () => launchUrl(
-                        Uri.parse(
-                          'https://news.ycombinator.com/user?id=${user.id}',
-                        ),
-                        mode: LaunchMode.externalApplication,
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            'news.ycombinator.com',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: ember?.metadataColor,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            AppIcons.openExternal,
-                            size: 12,
-                            color: ember?.metadataColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              EmberAvatarTile(letter: user.id[0].toUpperCase()),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
+        ),
+        const SizedBox(height: 12),
+        Text(
+          user.id,
+          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 4),
+        GestureDetector(
+          onTap: () => openLink(
+            context,
+            ref,
+            'https://news.ycombinator.com/user?id=${user.id}',
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: _StatCard(
-                  value: user.karma.toInt().toString(),
-                  label: 'KARMA',
-                  ember: ember,
-                  colorScheme: colorScheme,
+              Text(
+                'news.ycombinator.com',
+                style: textTheme.bodySmall?.copyWith(
+                  color: ember?.metadataColor,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  value: DateFormat('d MMMM y').format(joinDate),
-                  label: 'JOINED',
-                  ember: ember,
-                  colorScheme: colorScheme,
-                ),
+              const SizedBox(width: 4),
+              Icon(
+                AppIcons.openExternal,
+                size: 12,
+                color: ember?.metadataColor,
               ),
             ],
           ),
-          if (user.about != null && user.about!.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              _stripHtml(user.about ?? ''),
-              style: textTheme.bodyMedium?.copyWith(height: 1.4),
-            ),
-          ],
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      value: NumberFormat.decimalPattern().format(
+                        user.karma.toInt(),
+                      ),
+                      label: 'KARMA',
+                      ember: ember,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatCard(
+                      value: DateFormat('d MMM y').format(joinDate),
+                      label: 'JOINED',
+                      ember: ember,
+                    ),
+                  ),
+                ],
+              ),
+              if (about.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _AboutCard(text: about, ember: ember),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -210,29 +237,27 @@ class _StatCard extends StatelessWidget {
   final String value;
   final String label;
   final EmberThemeExtension? ember;
-  final ColorScheme colorScheme;
 
   const _StatCard({
     required this.value,
     required this.label,
     required this.ember,
-    required this.colorScheme,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant.withAlpha(80)),
+        color: ember?.storyCardBackground,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: ember?.accentOrange,
             ),
@@ -251,28 +276,125 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _TabBar extends StatelessWidget {
-  final int selectedTab;
-  final ValueChanged<int> onTabChanged;
+class _AboutCard extends StatelessWidget {
+  final String text;
+  final EmberThemeExtension? ember;
 
-  const _TabBar({required this.selectedTab, required this.onTabChanged});
+  const _AboutCard({required this.text, required this.ember});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    final isLink = text.startsWith('http://') || text.startsWith('https://');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ember?.storyCardBackground,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          height: 1.4,
+          color: isLink ? ember?.commentAuthorColor : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Pinned underline tab bar (Submissions / Comments) for the profile scroll
+/// view. Rendered via [SliverPersistentHeader] so it sticks below the banner.
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  final int selectedTab;
+  final ValueChanged<int> onTabChanged;
+
+  _TabBarDelegate({required this.selectedTab, required this.onTabChanged});
+
+  static const _height = 52.0;
+
+  @override
+  double get minExtent => _height;
+
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final ember = Theme.of(context).extension<EmberThemeExtension>();
+
+    return Container(
+      color: ember?.scaffoldBackground,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          EmberChip(
+          _TabItem(
             label: 'Submissions',
             selected: selectedTab == 0,
             onTap: () => onTabChanged(0),
+            ember: ember,
           ),
-          const SizedBox(width: 8),
-          EmberChip(
+          const SizedBox(width: 24),
+          _TabItem(
             label: 'Comments',
             selected: selectedTab == 1,
             onTap: () => onTabChanged(1),
+            ember: ember,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_TabBarDelegate oldDelegate) =>
+      oldDelegate.selectedTab != selectedTab;
+}
+
+class _TabItem extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final EmberThemeExtension? ember;
+
+  const _TabItem({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    required this.ember,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = ember?.accentOrange;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? accent : colorScheme.onSurface.withAlpha(150),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            height: 3,
+            width: 32,
+            decoration: BoxDecoration(
+              color: selected ? accent : Colors.transparent,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
         ],
       ),
@@ -474,15 +596,18 @@ class _ProfileSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Skeletonizer(
-          child: _ProfileHeader(user: _fakeUser, ember: ember),
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Skeletonizer(
+            child: _ProfileHeader(user: _fakeUser, ember: ember),
+          ),
         ),
-        _TabBar(selectedTab: 0, onTabChanged: (_) {}),
-        const Expanded(
-          child: CustomScrollView(slivers: [_SubmissionsSkeleton()]),
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _TabBarDelegate(selectedTab: 0, onTabChanged: (_) {}),
         ),
+        const _SubmissionsSkeleton(),
       ],
     );
   }

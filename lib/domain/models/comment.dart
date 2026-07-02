@@ -37,11 +37,13 @@ class Comment {
       parent: (json['parent'] as num?)?.toInt(),
       dead: json['dead'] as bool? ?? false,
       deleted: json['deleted'] as bool? ?? false,
+      // Dead/deleted comments are kept in the tree so the "Show dead & deleted"
+      // setting can decide their visibility at render time (see flattenComments).
       children:
           rawChildren
               ?.whereType<Map<String, dynamic>>()
               .map((c) => Comment.fromJson(c))
-              .where((c) => !c.deleted && !c.dead && c.id != 0)
+              .where((c) => c.id != 0)
               .toList() ??
           const [],
     );

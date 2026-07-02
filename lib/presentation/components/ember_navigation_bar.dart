@@ -48,11 +48,10 @@ class EmberNavigationBar extends StatelessWidget {
 
     // Web cannot blur behind native HTML image layers, so use an opaque
     // surface there; mobile gets a real frosted-glass BackdropFilter.
+    final surface = ember?.scaffoldBackground ?? colorScheme.surface;
     final content = DecoratedBox(
       decoration: BoxDecoration(
-        color: kIsWeb
-            ? colorScheme.surface
-            : colorScheme.surface.withAlpha(210),
+        color: kIsWeb ? surface : surface.withAlpha(210),
         border: Border(
           top: BorderSide(
             color: colorScheme.outlineVariant.withAlpha(60),
@@ -67,10 +66,7 @@ class EmberNavigationBar extends StatelessWidget {
         indicatorColor: ember?.accentOrange.withAlpha(30),
         destinations: _destinations.map((item) {
           return NavigationDestination(
-            icon: Icon(
-              item.icon,
-              color: colorScheme.onSurface.withAlpha(150),
-            ),
+            icon: Icon(item.icon, color: colorScheme.onSurface.withAlpha(150)),
             selectedIcon: Icon(item.activeIcon, color: ember?.accentOrange),
             label: item.label,
           );
