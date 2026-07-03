@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/router/app_router.dart';
 import 'config/theme/app_theme.dart';
+import 'presentation/screens/splash_screen.dart';
 import 'presentation/view_models/settings_view_model.dart';
 
 void main() {
@@ -34,9 +35,35 @@ class EmberApp extends ConsumerWidget {
             textScaler: TextScaler.linear(textScale),
             disableAnimations: reduceMotion || media.disableAnimations,
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: _SplashGate(child: child ?? const SizedBox.shrink()),
         );
       },
     );
+  }
+}
+
+/// Overlays the [SplashScreen] on top of the app until its animation finishes.
+class _SplashGate extends StatefulWidget {
+  const _SplashGate({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SplashGate> createState() => _SplashGateState();
+}
+
+class _SplashGateState extends State<_SplashGate> {
+  bool _showSplash = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return SplashScreen(
+        onFinish: () {
+          if (mounted) setState(() => _showSplash = false);
+        },
+      );
+    }
+    return widget.child;
   }
 }
