@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
+import '../../utils/html_unescape.dart';
 import '../../utils/url_utils.dart';
 import '../view_models/post_detail_view_model.dart';
 import 'post_action_bar.dart';
@@ -103,18 +104,18 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
     this.onCollapseAll,
     this.onExpandAll,
   }) : _expandedTitleHeight = _measureTitleHeight(
-         item.title,
+         htmlUnescape(item.title ?? ''),
          titleStyle,
          width,
        );
 
   static double _measureTitleHeight(
-    String? title,
+    String title,
     TextStyle? style,
     double width,
   ) {
     final painter = TextPainter(
-      text: TextSpan(text: title ?? '', style: style),
+      text: TextSpan(text: title, style: style),
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: width - _kContentPadding * 2);
     return painter.height;
@@ -239,7 +240,7 @@ class _TitleRegion extends StatelessWidget {
               ignoring: collapsed < 0.5,
               child: Opacity(
                 opacity: collapsed,
-                child: _CondensedTitle(title: item.title ?? ''),
+                child: _CondensedTitle(title: htmlUnescape(item.title ?? '')),
               ),
             ),
           ),

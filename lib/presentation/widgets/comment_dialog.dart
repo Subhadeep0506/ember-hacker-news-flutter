@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/di/providers.dart';
 import '../../config/theme/ember_theme_extension.dart';
+import '../../utils/html_unescape.dart';
 import '../view_models/auth_view_model.dart';
 
 Future<bool?> showCommentDialog(
@@ -216,7 +217,7 @@ class _ParentPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stripped = _stripHtml(text);
+    final stripped = stripHtml(text);
 
     return Container(
       constraints: const BoxConstraints(maxHeight: 120),
@@ -245,17 +246,4 @@ class _ParentPreview extends StatelessWidget {
     );
   }
 
-  static String _stripHtml(String html) {
-    return html
-        .replaceAll(RegExp(r'<p>'), '\n')
-        .replaceAll(RegExp(r'<[^>]*>'), '')
-        .replaceAll(RegExp(r'&amp;'), '&')
-        .replaceAll(RegExp(r'&lt;'), '<')
-        .replaceAll(RegExp(r'&gt;'), '>')
-        .replaceAll(RegExp(r'&quot;'), '"')
-        .replaceAll(RegExp(r'&#x27;'), "'")
-        .replaceAll(RegExp(r'&#x2F;'), '/')
-        .replaceAll(RegExp(r'\n{2,}'), '\n')
-        .trim();
-  }
 }

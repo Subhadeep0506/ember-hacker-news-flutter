@@ -281,43 +281,53 @@ class _CommentHeader extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Row(
         children: [
-          TappableUsername(
-            username: c.by ?? 'anon',
-            style: textTheme.bodySmall?.copyWith(
-              color: isOp ? accent : ember?.commentAuthorColor,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: TappableUsername(
+                    username: c.by ?? 'anon',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: isOp ? accent : ember?.commentAuthorColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (isOp) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: accent?.withAlpha(30),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'OP',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: accent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+                if (time.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(time, style: metaStyle),
+                ],
+                if (comment.childCount > 0) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    '· ${comment.childCount} ${comment.childCount == 1 ? 'reply' : 'replies'}',
+                    style: metaStyle,
+                  ),
+                ],
+              ],
             ),
           ),
-          if (isOp) ...[
-            const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(
-                color: accent?.withAlpha(30),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'OP',
-                style: textTheme.labelSmall?.copyWith(
-                  color: accent,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-          if (time.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            Text(time, style: metaStyle),
-          ],
-          if (comment.childCount > 0) ...[
-            const SizedBox(width: 8),
-            Text(
-              '· ${comment.childCount} ${comment.childCount == 1 ? 'reply' : 'replies'}',
-              style: metaStyle,
-            ),
-          ],
-          const Spacer(),
+          const SizedBox(width: 4),
           Icon(
             isCollapsed ? AppIcons.chevronRight : AppIcons.chevronDown,
             size: 18,

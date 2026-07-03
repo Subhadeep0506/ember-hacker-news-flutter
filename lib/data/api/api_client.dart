@@ -48,6 +48,24 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<Map<String, dynamic>> patch(
+    String path, {
+    Map<String, dynamic>? body,
+    String? token,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    log('PATCH $uri', name: 'ApiClient');
+
+    final headers = _buildHeaders(token: token);
+    final response = await _httpClient.patch(
+      uri,
+      headers: headers,
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    return _handleResponse(response);
+  }
+
   Map<String, String> _buildHeaders({String? token}) {
     final headers = <String, String>{
       'Content-Type': 'application/json',

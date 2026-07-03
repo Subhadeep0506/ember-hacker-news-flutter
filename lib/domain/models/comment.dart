@@ -32,9 +32,11 @@ class Comment {
     return Comment(
       id: (json['id'] as num?)?.toInt() ?? 0,
       by: json['by'] as String? ?? json['author'] as String?,
-      time: (json['time'] as num?)?.toInt(),
+      time: (json['time'] as num?)?.toInt() ??
+          (json['created_at_i'] as num?)?.toInt(),
       text: json['text'] as String?,
-      parent: (json['parent'] as num?)?.toInt(),
+      parent: (json['parent'] as num?)?.toInt() ??
+          (json['parent_id'] as num?)?.toInt(),
       dead: json['dead'] as bool? ?? false,
       deleted: json['deleted'] as bool? ?? false,
       // Dead/deleted comments are kept in the tree so the "Show dead & deleted"

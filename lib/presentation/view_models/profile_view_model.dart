@@ -8,6 +8,7 @@ class ProfileState {
   final AsyncValue<HnUser> user;
   final AsyncValue<SearchResponse>? submissions;
   final AsyncValue<UserCommentsResponse>? comments;
+  final AsyncValue<UserFavoritesResponse>? favorites;
   final int selectedTab;
 
   const ProfileState({
@@ -15,6 +16,7 @@ class ProfileState {
     this.user = const AsyncValue.loading(),
     this.submissions,
     this.comments,
+    this.favorites,
     this.selectedTab = 0,
   });
 
@@ -23,6 +25,7 @@ class ProfileState {
     AsyncValue<HnUser>? user,
     AsyncValue<SearchResponse>? submissions,
     AsyncValue<UserCommentsResponse>? comments,
+    AsyncValue<UserFavoritesResponse>? favorites,
     int? selectedTab,
   }) {
     return ProfileState(
@@ -30,6 +33,7 @@ class ProfileState {
       user: user ?? this.user,
       submissions: submissions ?? this.submissions,
       comments: comments ?? this.comments,
+      favorites: favorites ?? this.favorites,
       selectedTab: selectedTab ?? this.selectedTab,
     );
   }
@@ -57,6 +61,8 @@ class ProfileViewModel extends Notifier<ProfileState> {
       loadSubmissions();
     } else if (tab == 1 && state.comments == null) {
       loadComments();
+    } else if (tab == 2 && state.favorites == null) {
+      loadFavorites();
     }
   }
 
@@ -83,6 +89,19 @@ class ProfileViewModel extends Notifier<ProfileState> {
       state = state.copyWith(comments: AsyncValue.data(result));
     } catch (e, st) {
       state = state.copyWith(comments: AsyncValue.error(e, st));
+    }
+  }
+
+  Future<void> loadFavorites() async {
+    state = state.copyWith(
+      favorites: const AsyncValue.loading(),
+    );
+    try {
+      final repo = ref.read(userRepositoryProvider);
+      final result = await repo.getFavorites(state.username);
+      state = state.copyWith(favorites: AsyncValue.data(result));
+    } catch (e, st) {
+      state = state.copyWith(favorites: AsyncValue.error(e, st));
     }
   }
 

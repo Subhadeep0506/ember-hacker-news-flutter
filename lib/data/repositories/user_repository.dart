@@ -25,4 +25,12 @@ class UserRepository {
   }) {
     return _apiService.getComments(username, page: page, limit: limit);
   }
+
+  Future<UserFavoritesResponse> getFavorites(
+    String username, {
+    int page = 1,
+    int limit = 30,
+  }) {
+    return _apiService.getFavorites(username, page: page, limit: limit);
+  }
 }

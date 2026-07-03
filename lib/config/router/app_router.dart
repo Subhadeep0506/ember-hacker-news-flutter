@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/screens/app_shell.dart';
+import '../../presentation/screens/edit_profile_screen.dart';
 import '../../presentation/screens/feed_screen.dart';
 import '../../presentation/screens/in_app_browser_screen.dart';
 import '../../presentation/screens/post_detail_screen.dart';
@@ -67,6 +68,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
           return ProfileScreen(username: username);
         },
+        routes: [
+          GoRoute(
+            path: 'edit',
+            builder: (context, state) => const EditProfileScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: '/post/:id',

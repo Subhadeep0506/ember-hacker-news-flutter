@@ -1,3 +1,4 @@
+import '../../domain/models/user_profile.dart';
 import '../api/auth_api_service.dart';
 import '../local/settings_dao.dart';
 
@@ -26,5 +27,16 @@ class AuthRepository {
   Future<void> logout() async {
     await _settingsDao.delete(_tokenKey);
     await _settingsDao.delete(_usernameKey);
+  }
+
+  Future<UserProfile> getMe({required String token}) {
+    return _apiService.getMe(token: token);
+  }
+
+  Future<bool> updateMe({
+    required String token,
+    required Map<String, dynamic> fields,
+  }) {
+    return _apiService.updateMe(token: token, fields: fields);
   }
 }

@@ -8,3 +8,5 @@ export 'hn_user.dart';
 export 'item_response.dart';
 export 'search_response.dart';
 export 'user_comments_response.dart';
+export 'user_favorites_response.dart';
+export 'user_profile.dart';

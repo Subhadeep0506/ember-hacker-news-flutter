@@ -194,19 +194,26 @@ class _UltraGradientPainter extends CustomPainter {
 
     // Dissolve the lower edge into the content-sheet colour so the hero blends
     // into the sheet below with no hard horizontal seam.
-    final fadeHeight = size.height * 0.4;
-    final fadeRect = Rect.fromLTWH(
-      0,
-      size.height - fadeHeight,
-      size.width,
-      fadeHeight,
-    );
-    final fadeShader = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [fadeColor.withValues(alpha: 0), fadeColor],
-    ).createShader(fadeRect);
-    canvas.drawRect(fadeRect, Paint()..shader = fadeShader);
+    // final fadeHeight = size.height * 0.55;
+    // final fadeRect = Rect.fromLTWH(
+    //   0,
+    //   size.height - fadeHeight,
+    //   size.width,
+    //   fadeHeight,
+    // );
+    // final fadeShader = LinearGradient(
+    //   begin: Alignment.topCenter,
+    //   end: Alignment.bottomCenter,
+    //   colors: [
+    //     fadeColor.withValues(alpha: 0),
+    //     fadeColor.withValues(alpha: 0.05),
+    //     fadeColor.withValues(alpha: 0.2),
+    //     fadeColor.withValues(alpha: 0.5),
+    //     fadeColor,
+    //   ],
+    //   stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+    // ).createShader(fadeRect);
+    // canvas.drawRect(fadeRect, Paint()..shader = fadeShader);
   }
 
   @override

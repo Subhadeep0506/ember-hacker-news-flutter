@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/theme/app_icons.dart';
 import '../../config/di/providers.dart';
 import '../../config/theme/ember_theme_extension.dart';
+import '../../utils/html_unescape.dart';
 import '../../domain/models/models.dart';
 import '../../utils/link_launcher.dart';
 import '../../utils/time_ago.dart';
@@ -61,7 +62,7 @@ class PostHeaderContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(item.title ?? '', style: postTitleStyle(textTheme)),
+          Text(htmlUnescape(item.title ?? ''), style: postTitleStyle(textTheme)),
           if (domain != null) ...[
             const SizedBox(height: 8),
             _DomainRow(

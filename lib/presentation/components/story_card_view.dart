@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
+import '../../utils/html_unescape.dart';
 import '../../utils/url_utils.dart';
 import 'ember_domain_avatar.dart';
 import 'ember_vote_pill.dart';
@@ -67,7 +68,7 @@ class StoryCardView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                title,
+                htmlUnescape(title),
                 style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   height: 1.3,

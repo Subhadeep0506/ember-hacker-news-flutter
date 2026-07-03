@@ -6,10 +6,26 @@ String timeAgo(int? unixSeconds) {
   final diff = now.difference(date);
 
   if (diff.isNegative) return '';
-  if (diff.inSeconds < 60) return '${diff.inSeconds}s';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-  if (diff.inHours < 24) return '${diff.inHours}h';
-  if (diff.inDays < 30) return '${diff.inDays}d';
-  if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}mo';
-  return '${(diff.inDays / 365).floor()}y';
+  if (diff.inSeconds < 60) {
+    final s = diff.inSeconds;
+    return '$s sec${s == 1 ? '' : 's'} ago';
+  }
+  if (diff.inMinutes < 60) {
+    final m = diff.inMinutes;
+    return '$m min${m == 1 ? '' : 's'} ago';
+  }
+  if (diff.inHours < 24) {
+    final h = diff.inHours;
+    return '$h hour${h == 1 ? '' : 's'} ago';
+  }
+  if (diff.inDays < 30) {
+    final d = diff.inDays;
+    return '$d day${d == 1 ? '' : 's'} ago';
+  }
+  if (diff.inDays < 365) {
+    final mo = (diff.inDays / 30).floor();
+    return '$mo month${mo == 1 ? '' : 's'} ago';
+  }
+  final y = (diff.inDays / 365).floor();
+  return '$y year${y == 1 ? '' : 's'} ago';
 }

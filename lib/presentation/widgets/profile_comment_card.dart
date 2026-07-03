@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
+import '../../utils/html_unescape.dart';
 import '../../utils/time_ago.dart';
 
 class ProfileCommentCard extends StatelessWidget {
@@ -20,16 +21,7 @@ class ProfileCommentCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
-      elevation: 1,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant.withAlpha(40),
-          width: 0.5,
-        ),
-      ),
-      color: ember?.storyCardBackground,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -40,7 +32,7 @@ class ProfileCommentCard extends StatelessWidget {
             children: [
               if (comment.storyTitle != null)
                 Text(
-                  comment.storyTitle ?? '',
+                  htmlUnescape(comment.storyTitle ?? ''),
                   style: textTheme.bodySmall?.copyWith(
                     color: ember?.metadataColor,
                     fontWeight: FontWeight.w500,
@@ -50,7 +42,7 @@ class ProfileCommentCard extends StatelessWidget {
                 ),
               if (comment.storyTitle != null) const SizedBox(height: 6),
               Text(
-                _stripHtml(comment.commentText),
+                stripHtml(comment.commentText),
                 style: textTheme.bodyMedium?.copyWith(height: 1.4),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
@@ -79,16 +71,4 @@ class ProfileCommentCard extends StatelessWidget {
     return parts.join(' · ');
   }
 
-  static String _stripHtml(String html) {
-    return html
-        .replaceAll(RegExp(r'<p>'), '\n')
-        .replaceAll(RegExp(r'<[^>]*>'), '')
-        .replaceAll(RegExp(r'&amp;'), '&')
-        .replaceAll(RegExp(r'&lt;'), '<')
-        .replaceAll(RegExp(r'&gt;'), '>')
-        .replaceAll(RegExp(r'&quot;'), '"')
-        .replaceAll(RegExp(r'&#x27;'), "'")
-        .replaceAll(RegExp(r'\n{2,}'), '\n')
-        .trim();
-  }
 }

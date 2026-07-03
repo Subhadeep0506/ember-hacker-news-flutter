@@ -7,10 +7,13 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../domain/models/models.dart';
+import '../../utils/html_unescape.dart';
 import '../../utils/link_launcher.dart';
 import '../components/ember_avatar_tile.dart';
 import '../components/ember_icon_button.dart';
 import '../components/search_story_card.dart';
+import '../components/story_card.dart';
+import '../view_models/auth_view_model.dart';
 import '../view_models/profile_view_model.dart';
 import '../widgets/profile_comment_card.dart';
 
@@ -37,6 +40,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final state = ref.watch(profileViewModelProvider);
     final viewModel = ref.read(profileViewModelProvider.notifier);
     final ember = Theme.of(context).extension<EmberThemeExtension>();
+    final auth = ref.watch(authViewModelProvider);
+    final isOwnProfile = auth.isLoggedIn &&
+        auth.username?.toLowerCase() == widget.username.toLowerCase();
 
     return Scaffold(
       body: Stack(
@@ -53,7 +59,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverToBoxAdapter(
-                    child: _ProfileHeader(user: user, ember: ember),
+                    child: _ProfileHeader(
+                      user: user,
+                      ember: ember,
+                      isOwnProfile: isOwnProfile,
+                    ),
                   ),
                   SliverPersistentHeader(
                     pinned: true,
@@ -67,10 +77,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       submissions: state.submissions,
                       onRetry: viewModel.loadSubmissions,
                     )
-                  else
+                  else if (state.selectedTab == 1)
                     _CommentsList(
                       comments: state.comments,
                       onRetry: viewModel.loadComments,
+                    )
+                  else
+                    _FavoritesList(
+                      favorites: state.favorites,
+                      onRetry: viewModel.loadFavorites,
                     ),
                   const SliverPadding(padding: EdgeInsets.only(bottom: 32)),
                 ],
@@ -110,8 +125,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 class _ProfileHeader extends ConsumerWidget {
   final HnUser user;
   final EmberThemeExtension? ember;
+  final bool isOwnProfile;
 
-  const _ProfileHeader({required this.user, required this.ember});
+  const _ProfileHeader({
+    required this.user,
+    required this.ember,
+    this.isOwnProfile = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,7 +141,7 @@ class _ProfileHeader extends ConsumerWidget {
     final joinDate = DateTime.fromMillisecondsSinceEpoch(
       user.created.toInt() * 1000,
     );
-    final about = _stripHtml(user.about ?? '');
+    final about = stripHtml(user.about ?? '');
 
     return Column(
       children: [
@@ -214,6 +234,19 @@ class _ProfileHeader extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _AboutCard(text: about, ember: ember),
               ],
+              if (isOwnProfile) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(
+                    '/profile/${Uri.encodeComponent(user.id)}/edit',
+                  ),
+                  icon: const Icon(AppIcons.user, size: 18),
+                  label: const Text('Edit Profile'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -221,16 +254,6 @@ class _ProfileHeader extends ConsumerWidget {
     );
   }
 
-  static String _stripHtml(String html) {
-    return html
-        .replaceAll(RegExp(r'<p>'), '\n')
-        .replaceAll(RegExp(r'<[^>]*>'), '')
-        .replaceAll(RegExp(r'&amp;'), '&')
-        .replaceAll(RegExp(r'&lt;'), '<')
-        .replaceAll(RegExp(r'&gt;'), '>')
-        .replaceAll(RegExp(r'\n{2,}'), '\n')
-        .trim();
-  }
 }
 
 class _StatCard extends StatelessWidget {
@@ -344,6 +367,13 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
             label: 'Comments',
             selected: selectedTab == 1,
             onTap: () => onTabChanged(1),
+            ember: ember,
+          ),
+          const SizedBox(width: 24),
+          _TabItem(
+            label: 'Favorites',
+            selected: selectedTab == 2,
+            onTap: () => onTabChanged(2),
             ember: ember,
           ),
         ],
@@ -508,6 +538,60 @@ class _CommentsList extends StatelessWidget {
   }
 }
 
+class _FavoritesList extends StatelessWidget {
+  final AsyncValue<UserFavoritesResponse>? favorites;
+  final VoidCallback onRetry;
+
+  const _FavoritesList({required this.favorites, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    if (favorites == null) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    return favorites!.when(
+      loading: () => const _FavoritesSkeleton(),
+      error: (error, _) => SliverToBoxAdapter(
+        child: _ErrorView(error: error, onRetry: onRetry),
+      ),
+      data: (response) {
+        if (response.items.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: Text(
+                  'No favorites yet',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).extension<EmberThemeExtension>()?.metadataColor,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          sliver: SliverList.builder(
+            itemCount: response.items.length,
+            itemBuilder: (context, index) {
+              final item = response.items[index];
+              return StoryCard(
+                item: item,
+                rank: index + 1,
+                onTap: () => context.push('/post/${item.id}'),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _ErrorView extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
@@ -637,6 +721,34 @@ class _CommentsSkeleton extends StatelessWidget {
         itemCount: 6,
         itemBuilder: (_, _) =>
             const ProfileCommentCard(comment: _fakeCommentHit),
+      ),
+    );
+  }
+}
+
+const _fakeHnItem = HnItem(
+  id: 0,
+  type: 'story',
+  by: 'username',
+  time: 1719700000,
+  title: 'This is a placeholder favorite title for the skeleton state',
+  url: 'https://example.com/article',
+  score: 128,
+  descendants: 42,
+);
+
+class _FavoritesSkeleton extends StatelessWidget {
+  const _FavoritesSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer.sliver(
+      child: SliverList.builder(
+        itemCount: 6,
+        itemBuilder: (_, index) => StoryCard(
+          item: _fakeHnItem,
+          rank: index + 1,
+        ),
       ),
     );
   }

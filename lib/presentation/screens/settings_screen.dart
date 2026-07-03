@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../config/theme/app_icons.dart';
 import '../../config/theme/ember_theme_extension.dart';
@@ -158,21 +159,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  auth.username ?? '',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                GestureDetector(
+                  onTap: () => context.push(
+                    '/profile/${Uri.encodeComponent(auth.username!)}',
+                  ),
+                  child: Text(
+                    auth.username ?? '',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 2),
                 GestureDetector(
-                  onTap: () => openLink(
-                    context,
-                    ref,
-                    'https://news.ycombinator.com/user?id=${auth.username}',
+                  onTap: () => context.push(
+                    '/profile/${Uri.encodeComponent(auth.username!)}',
                   ),
                   child: Text(
-                    'View HN profile →',
+                    'View profile →',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: ember?.accentOrange,
                       fontWeight: FontWeight.w600,
@@ -740,14 +744,12 @@ class _SettingsBanner extends ConsumerWidget {
                       children: [
                         EmberIconButton(
                           icon: AppIcons.user,
-                          tooltip: 'HN profile',
+                          tooltip: 'Profile',
                           color: Colors.white,
                           background: Colors.black.withAlpha(45),
                           onTap: isLoggedIn
-                              ? () => openLink(
-                                  context,
-                                  ref,
-                                  'https://news.ycombinator.com/user?id=${auth.username}',
+                              ? () => context.push(
+                                  '/profile/${Uri.encodeComponent(auth.username!)}',
                                 )
                               : null,
                         ),
@@ -766,22 +768,44 @@ class _SettingsBanner extends ConsumerWidget {
                   ),
                 ),
               ),
-              EmberAvatarTile(icon: AppIcons.user),
+              GestureDetector(
+                onTap: isLoggedIn
+                    ? () => context.push(
+                        '/profile/${Uri.encodeComponent(auth.username!)}',
+                      )
+                    : null,
+                child: EmberAvatarTile(icon: AppIcons.user),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        Text(
-          name,
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(color: ember?.metadataColor),
+        GestureDetector(
+          onTap: isLoggedIn
+              ? () => context.push(
+                  '/profile/${Uri.encodeComponent(auth.username!)}',
+                )
+              : null,
+          child: Column(
+            children: [
+              Text(
+                name,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: ember?.metadataColor,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -826,12 +850,7 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ember = Theme.of(context).extension<EmberThemeExtension>();
-
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: ember?.storyCardBackground,
       clipBehavior: Clip.antiAlias,
       child: Column(mainAxisSize: MainAxisSize.min, children: children),
     );
@@ -1019,16 +1038,21 @@ class _ChipRow extends StatelessWidget {
         children: [
           _RowLabel(title: title),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
             children: options
                 .map(
-                  (opt) => EmberChip(
-                    label: opt.label,
-                    icon: opt.icon,
-                    selected: selected == opt.value,
-                    onTap: () => onSelected(opt.value),
+                  (opt) => Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: opt == options.last ? 0 : 8,
+                      ),
+                      child: EmberChip(
+                        label: opt.label,
+                        icon: opt.icon,
+                        selected: selected == opt.value,
+                        onTap: () => onSelected(opt.value),
+                      ),
+                    ),
                   ),
                 )
                 .toList(),

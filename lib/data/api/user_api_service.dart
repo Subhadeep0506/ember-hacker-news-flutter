@@ -37,4 +37,17 @@ class UserApiService {
     );
     return UserCommentsResponse.fromJson(json);
   }
+
+  Future<UserFavoritesResponse> getFavorites(
+    String username, {
+    int page = 1,
+    int limit = 30,
+  }) async {
+    final encodedUsername = Uri.encodeComponent(username);
+    final json = await _client.get(
+      '/user/$encodedUsername/favorites',
+      queryParams: {'page': page.toString(), 'limit': limit.toString()},
+    );
+    return UserFavoritesResponse.fromJson(json);
+  }
 }
