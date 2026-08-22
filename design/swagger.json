@@ -1,0 +1,1618 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"OkResponse": {
+				"properties": {
+					"ok": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"ok"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ErrorResponse": {
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"error"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CommentRequest": {
+				"properties": {
+					"parentId": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 1
+					},
+					"text": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 10000
+					}
+				},
+				"required": [
+					"parentId",
+					"text"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"VoteRequest": {
+				"properties": {
+					"itemId": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 1
+					},
+					"direction": {
+						"type": "string",
+						"enum": [
+							"up",
+							"un"
+						]
+					}
+				},
+				"required": [
+					"itemId",
+					"direction"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SubmitRequest": {
+				"properties": {
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 80
+					},
+					"url": {
+						"type": "string"
+					},
+					"text": {
+						"type": "string",
+						"maxLength": 10000
+					}
+				},
+				"required": [
+					"title"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HnUser": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"created": {
+						"type": "number",
+						"format": "double"
+					},
+					"karma": {
+						"type": "number",
+						"format": "double"
+					},
+					"about": {
+						"type": "string"
+					},
+					"submitted": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"created",
+					"karma"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AlgoliaStoryHit": {
+				"properties": {
+					"objectID": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"url": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"points": {
+						"type": "number",
+						"format": "double"
+					},
+					"num_comments": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"story_text": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					},
+					"created_at_i": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"objectID",
+					"title",
+					"author",
+					"points",
+					"num_comments",
+					"created_at",
+					"created_at_i"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserSubmissionsResponse": {
+				"properties": {
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/AlgoliaStoryHit"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"items",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"_HnItem": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"story",
+							"comment",
+							"job",
+							"poll",
+							"pollopt"
+						]
+					},
+					"by": {
+						"type": "string"
+					},
+					"time": {
+						"type": "number",
+						"format": "double"
+					},
+					"text": {
+						"type": "string"
+					},
+					"url": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"score": {
+						"type": "number",
+						"format": "double"
+					},
+					"descendants": {
+						"type": "number",
+						"format": "double"
+					},
+					"kids": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array"
+					},
+					"parent": {
+						"type": "number",
+						"format": "double"
+					},
+					"dead": {
+						"type": "boolean"
+					},
+					"deleted": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"id",
+					"type",
+					"time"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserFavoritesResponse": {
+				"properties": {
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/_HnItem"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"hasMore": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"items",
+					"total",
+					"page",
+					"limit",
+					"totalPages",
+					"hasMore"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AlgoliaCommentHit": {
+				"properties": {
+					"objectID": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"comment_text": {
+						"type": "string"
+					},
+					"story_id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"story_title": {
+						"type": "string"
+					},
+					"story_url": {
+						"type": "string"
+					},
+					"parent_id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"created_at": {
+						"type": "string"
+					},
+					"created_at_i": {
+						"type": "number",
+						"format": "double"
+					},
+					"points": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"objectID",
+					"author",
+					"comment_text",
+					"story_id",
+					"parent_id",
+					"created_at",
+					"created_at_i",
+					"points"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserCommentsResponse": {
+				"properties": {
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/AlgoliaCommentHit"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"items",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SearchResponse": {
+				"properties": {
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/AlgoliaStoryHit"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"items",
+					"total",
+					"page",
+					"limit",
+					"totalPages"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SortMode": {
+				"type": "string",
+				"enum": [
+					"relevance",
+					"date"
+				]
+			},
+			"OgImageResponse": {
+				"properties": {
+					"image": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"image"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ItemResponse": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"story",
+							"comment",
+							"job",
+							"poll",
+							"pollopt"
+						]
+					},
+					"by": {
+						"type": "string"
+					},
+					"time": {
+						"type": "number",
+						"format": "double"
+					},
+					"text": {
+						"type": "string"
+					},
+					"url": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"score": {
+						"type": "number",
+						"format": "double"
+					},
+					"descendants": {
+						"type": "number",
+						"format": "double"
+					},
+					"kids": {
+						"items": {
+							"type": "number",
+							"format": "double"
+						},
+						"type": "array"
+					},
+					"parent": {
+						"type": "number",
+						"format": "double"
+					},
+					"dead": {
+						"type": "boolean"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"children": {
+						"items": {},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"type",
+					"time",
+					"children"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HealthResponse": {
+				"properties": {
+					"ok": {
+						"type": "boolean"
+					},
+					"error": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"ok"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FeedResponse": {
+				"properties": {
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/_HnItem"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"limit": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"items",
+					"total",
+					"page",
+					"limit"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FeedType": {
+				"type": "string",
+				"enum": [
+					"top",
+					"new",
+					"best",
+					"ask",
+					"show",
+					"job"
+				]
+			},
+			"LoginResponse": {
+				"properties": {
+					"token": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"token",
+					"username"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"LoginRequest": {
+				"properties": {
+					"username": {
+						"type": "string",
+						"minLength": 1
+					},
+					"password": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"required": [
+					"username",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserProfile": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"karma": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"created": {
+						"type": "number",
+						"format": "double",
+						"nullable": true
+					},
+					"about": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"showdead": {
+						"type": "string",
+						"nullable": true
+					},
+					"noprocrast": {
+						"type": "string",
+						"nullable": true
+					},
+					"maxvisit": {
+						"type": "string",
+						"nullable": true
+					},
+					"minaway": {
+						"type": "string",
+						"nullable": true
+					},
+					"delay": {
+						"type": "string",
+						"nullable": true
+					}
+				},
+				"required": [
+					"username",
+					"karma",
+					"created",
+					"about",
+					"email",
+					"showdead",
+					"noprocrast",
+					"maxvisit",
+					"minaway",
+					"delay"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateProfileRequest": {
+				"properties": {
+					"about": {
+						"type": "string",
+						"maxLength": 10000
+					},
+					"email": {
+						"type": "string",
+						"maxLength": 256
+					},
+					"showdead": {
+						"type": "boolean"
+					},
+					"noprocrast": {
+						"type": "boolean"
+					},
+					"maxvisit": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 0
+					},
+					"minaway": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 0
+					},
+					"delay": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 0
+					},
+					"password": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {
+			"BearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
+	},
+	"info": {
+		"title": "hacker-news-api",
+		"version": "0.0.1",
+		"contact": {}
+	},
+	"paths": {
+		"/write/comment": {
+			"post": {
+				"operationId": "PostComment",
+				"responses": {
+					"200": {
+						"description": "Comment posted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OkResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not authenticated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "HN rejected the comment",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limited",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Post a comment on HN",
+				"tags": [
+					"Write"
+				],
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CommentRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/write/vote": {
+			"post": {
+				"operationId": "VoteOnItem",
+				"responses": {
+					"200": {
+						"description": "Vote cast",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OkResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not authenticated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limited",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"502": {
+						"description": "Vote link not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Vote on an item",
+				"tags": [
+					"Write"
+				],
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/VoteRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/write/submit": {
+			"post": {
+				"operationId": "SubmitNewPost",
+				"responses": {
+					"200": {
+						"description": "Post submitted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OkResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not authenticated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "HN rejected the submission",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limited",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Submit a new post to HN",
+				"tags": [
+					"Write"
+				],
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SubmitRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/{username}": {
+			"get": {
+				"operationId": "GetUser",
+				"responses": {
+					"200": {
+						"description": "User profile",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HnUser"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "User not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a public user profile from HN. Cached for 5 minutes.",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/user/{username}/submissions": {
+			"get": {
+				"operationId": "GetUserSubmissions",
+				"responses": {
+					"200": {
+						"description": "User submissions",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserSubmissionsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a paginated list of a user's story submissions, sorted by date (most recent first).",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 20,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/user/{username}/favorites": {
+			"get": {
+				"operationId": "GetUserFavorites",
+				"responses": {
+					"200": {
+						"description": "User favorites",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserFavoritesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a paginated list of a user's favorite items from HN.",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 20,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/user/{username}/comments": {
+			"get": {
+				"operationId": "GetUserComments",
+				"responses": {
+					"200": {
+						"description": "User comments",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserCommentsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a paginated list of a user's comments, sorted by date (most recent first).",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "username",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 20,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/feed/search": {
+			"get": {
+				"operationId": "Search",
+				"responses": {
+					"200": {
+						"description": "Search results",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SearchResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Search HN stories via Algolia. Use sort=date for newest-first.",
+				"tags": [
+					"Search"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "query",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortMode"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 20,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/og-image": {
+			"get": {
+				"operationId": "GetOgImage",
+				"responses": {
+					"200": {
+						"description": "OG image URL or null",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OgImageResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid or disallowed URL",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Extract the Open Graph image URL from a web page. Cached for 24 hours.",
+				"tags": [
+					"OG Image"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "url",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/item/{id}": {
+			"get": {
+				"operationId": "GetItem",
+				"responses": {
+					"200": {
+						"description": "Item with children",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ItemResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid item ID",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Item not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get an item with its full comment tree",
+				"tags": [
+					"Item"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/health": {
+			"get": {
+				"operationId": "HealthCheck",
+				"responses": {
+					"200": {
+						"description": "Healthy",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HealthResponse"
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Redis unreachable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HealthResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Pings Redis to verify the server is operational",
+				"tags": [
+					"Health"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/feed/{type}": {
+			"get": {
+				"operationId": "GetFeed",
+				"responses": {
+					"200": {
+						"description": "Feed items",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FeedResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid feed type",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get a paginated story feed",
+				"tags": [
+					"Feed"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "type",
+						"required": true,
+						"schema": {
+							"$ref": "#/components/schemas/FeedType"
+						}
+					},
+					{
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 30,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "Login successful",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/LoginResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Invalid credentials",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limited",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"502": {
+						"description": "HN unreachable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Log in with HN credentials. Rate limited to 50 attempts per 15 minutes.",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/me": {
+			"get": {
+				"operationId": "GetMe",
+				"responses": {
+					"200": {
+						"description": "Current user",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserProfile"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not authenticated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get current user's full profile (public + private fields)",
+				"tags": [
+					"Auth"
+				],
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": []
+			},
+			"patch": {
+				"operationId": "UpdateMe",
+				"responses": {
+					"200": {
+						"description": "Profile updated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OkResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Validation error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not authenticated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "HN rejected the profile update",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update current user's HN profile fields",
+				"tags": [
+					"Auth"
+				],
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateProfileRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/logout": {
+			"post": {
+				"operationId": "Logout",
+				"responses": {
+					"200": {
+						"description": "Logged out",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OkResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not authenticated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Log out (destroys server-side session)",
+				"tags": [
+					"Auth"
+				],
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"parameters": []
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}
