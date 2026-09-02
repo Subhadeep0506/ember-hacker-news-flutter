@@ -50,7 +50,14 @@ class FeedViewModel extends Notifier<FeedState> {
   @override
   FeedState build() {
     Future.microtask(_loadInitialFeed);
+    Future.microtask(_loadUpvoted);
     return const FeedState();
+  }
+
+  Future<void> _loadUpvoted() async {
+    final ids = await ref.read(votesRepositoryProvider).loadUpvoted();
+    if (ids.isEmpty) return;
+    state = state.copyWith(upvotedIds: {...state.upvotedIds, ...ids});
   }
 
   Future<void> _loadInitialFeed() async {
@@ -168,6 +175,7 @@ class FeedViewModel extends Notifier<FeedState> {
       } else {
         newUpvoted.add(itemId);
       }
+      await ref.read(votesRepositoryProvider).saveUpvoted(newUpvoted);
 
       final type = state.selectedType;
       final feed = state.feeds[type];

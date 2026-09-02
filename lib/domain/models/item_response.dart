@@ -40,4 +40,23 @@ class ItemResponse {
       _$ItemResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$ItemResponseToJson(this);
+
+  ItemResponse copyWith({int? score, int? descendants}) {
+    return ItemResponse(
+      id: id,
+      type: type,
+      by: by,
+      time: time,
+      text: text,
+      url: url,
+      title: title,
+      score: score ?? this.score,
+      descendants: descendants ?? this.descendants,
+      kids: kids,
+      parent: parent,
+      dead: dead,
+      deleted: deleted,
+      children: children,
+    );
+  }
 }

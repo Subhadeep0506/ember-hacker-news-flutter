@@ -8,8 +8,12 @@ import '../view_models/post_detail_view_model.dart';
 class PostActionBar extends StatelessWidget {
   final VoidCallback? onUpvote;
   final VoidCallback? onReply;
+  final VoidCallback? onFavorite;
+  final VoidCallback? onShare;
   final bool isUpvoted;
   final bool isVoting;
+  final bool isFavorited;
+  final bool isFavoriting;
   final CommentSort commentSort;
   final VoidCallback? onSortNewest;
   final VoidCallback? onSortOldest;
@@ -20,8 +24,12 @@ class PostActionBar extends StatelessWidget {
     super.key,
     this.onUpvote,
     this.onReply,
+    this.onFavorite,
+    this.onShare,
     this.isUpvoted = false,
     this.isVoting = false,
+    this.isFavorited = false,
+    this.isFavoriting = false,
     this.commentSort = CommentSort.oldestFirst,
     this.onSortNewest,
     this.onSortOldest,
@@ -52,17 +60,14 @@ class PostActionBar extends StatelessWidget {
           EmberActionButton(
             icon: AppIcons.favorite,
             label: 'Favorite',
-            onTap: () {},
-          ),
-          EmberActionButton(
-            icon: AppIcons.save,
-            label: 'Save',
-            onTap: () {},
+            isLoading: isFavoriting,
+            color: isFavorited ? ember?.accentOrange : null,
+            onTap: onFavorite,
           ),
           EmberActionButton(
             icon: AppIcons.share,
             label: 'Share',
-            onTap: () {},
+            onTap: onShare,
           ),
           _MoreMenuButton(
             commentSort: commentSort,
@@ -105,8 +110,7 @@ class _MoreMenuButton extends StatelessWidget {
       builder: (context, controller, _) => EmberActionButton(
         icon: AppIcons.more,
         label: 'More',
-        onTap: () =>
-            controller.isOpen ? controller.close() : controller.open(),
+        onTap: () => controller.isOpen ? controller.close() : controller.open(),
       ),
       menuChildren: [
         MenuItemButton(

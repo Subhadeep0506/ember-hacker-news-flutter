@@ -28,7 +28,7 @@ class UserRepository {
 
   Future<UserFavoritesResponse> getFavorites(
     String username, {
-    int page = 1,
+    int page = 0,
     int limit = 30,
   }) {
     return _apiService.getFavorites(username, page: page, limit: limit);

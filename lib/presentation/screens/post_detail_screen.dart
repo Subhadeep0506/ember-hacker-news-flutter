@@ -8,6 +8,7 @@ import '../../domain/models/models.dart';
 import '../../config/theme/ember_theme_extension.dart';
 import '../../utils/auth_guard.dart';
 import '../../utils/link_launcher.dart';
+import '../../utils/share_helper.dart';
 import '../components/ember_gradient_hero.dart';
 import '../components/ember_icon_button.dart';
 import '../view_models/post_detail_view_model.dart';
@@ -91,6 +92,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     ref.read(postDetailViewModelProvider.notifier).upvoteItem(itemId);
   }
 
+  Future<void> _handleFavorite(int itemId) async {
+    final loggedIn = await ensureLoggedIn(context, ref);
+    if (!loggedIn) return;
+    ref.read(postDetailViewModelProvider.notifier).toggleFavorite(itemId);
+  }
+
   Future<void> _handleReply(
     int parentId, {
     String? parentAuthor,
@@ -134,12 +141,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               _PostHeroAppBar(
                 url: postDetail.item.url,
                 seed: postDetail.item.id,
+                onShare: () => sharePost(postDetail.item),
               ),
               SliverStickyPostHeader(
                 item: postDetail.item,
                 width: MediaQuery.sizeOf(context).width,
                 isUpvoted: state.upvotedIds.contains(postDetail.item.id),
                 isVoting: state.votingIds.contains(postDetail.item.id),
+                isFavorited: state.favoritedIds.contains(postDetail.item.id),
+                isFavoriting: state.favoritingIds.contains(postDetail.item.id),
                 commentSort: state.commentSort,
                 onSortNewest: () =>
                     viewModel.setCommentSort(CommentSort.newestFirst),
@@ -148,6 +158,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 onCollapseAll: viewModel.collapseAll,
                 onExpandAll: viewModel.expandAll,
                 onUpvote: () => _handleUpvote(postDetail.item.id),
+                onFavorite: () => _handleFavorite(postDetail.item.id),
+                onShare: () => sharePost(postDetail.item),
                 onReply: () => _handleReply(
                   postDetail.item.id,
                   parentAuthor: postDetail.item.by,
@@ -171,6 +183,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   highlightOP: settings.highlightOP,
                   bodyTextStyle: bodyStyle,
                   onToggleCollapse: viewModel.toggleCollapse,
+                  onExpandReplies: viewModel.toggleRepliesExpanded,
                   onUpvote: (id) => _handleUpvote(id),
                   onOpenLink: (url) => openLink(context, ref, url),
                   onReply: (id) {
@@ -207,8 +220,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 class _PostHeroAppBar extends StatelessWidget {
   final String? url;
   final int seed;
+  final VoidCallback? onShare;
 
-  const _PostHeroAppBar({required this.url, required this.seed});
+  const _PostHeroAppBar({required this.url, required this.seed, this.onShare});
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +257,7 @@ class _PostHeroAppBar extends StatelessWidget {
           tooltip: 'Share',
           color: Colors.white,
           background: scrim,
-          onTap: () {},
+          onTap: onShare,
         ),
         const SizedBox(width: 8),
       ],

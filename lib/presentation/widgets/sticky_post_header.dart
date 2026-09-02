@@ -30,8 +30,12 @@ class SliverStickyPostHeader extends StatelessWidget {
   final double width;
   final VoidCallback? onUpvote;
   final VoidCallback? onReply;
+  final VoidCallback? onFavorite;
+  final VoidCallback? onShare;
   final bool isUpvoted;
   final bool isVoting;
+  final bool isFavorited;
+  final bool isFavoriting;
   final CommentSort commentSort;
   final VoidCallback? onSortNewest;
   final VoidCallback? onSortOldest;
@@ -44,8 +48,12 @@ class SliverStickyPostHeader extends StatelessWidget {
     required this.width,
     this.onUpvote,
     this.onReply,
+    this.onFavorite,
+    this.onShare,
     this.isUpvoted = false,
     this.isVoting = false,
+    this.isFavorited = false,
+    this.isFavoriting = false,
     this.commentSort = CommentSort.oldestFirst,
     this.onSortNewest,
     this.onSortOldest,
@@ -63,8 +71,12 @@ class SliverStickyPostHeader extends StatelessWidget {
         titleStyle: postTitleStyle(Theme.of(context).textTheme),
         onUpvote: onUpvote,
         onReply: onReply,
+        onFavorite: onFavorite,
+        onShare: onShare,
         isUpvoted: isUpvoted,
         isVoting: isVoting,
+        isFavorited: isFavorited,
+        isFavoriting: isFavoriting,
         commentSort: commentSort,
         onSortNewest: onSortNewest,
         onSortOldest: onSortOldest,
@@ -81,8 +93,12 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TextStyle? titleStyle;
   final VoidCallback? onUpvote;
   final VoidCallback? onReply;
+  final VoidCallback? onFavorite;
+  final VoidCallback? onShare;
   final bool isUpvoted;
   final bool isVoting;
+  final bool isFavorited;
+  final bool isFavoriting;
   final CommentSort commentSort;
   final VoidCallback? onSortNewest;
   final VoidCallback? onSortOldest;
@@ -96,8 +112,12 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.titleStyle,
     this.onUpvote,
     this.onReply,
+    this.onFavorite,
+    this.onShare,
     this.isUpvoted = false,
     this.isVoting = false,
+    this.isFavorited = false,
+    this.isFavoriting = false,
     this.commentSort = CommentSort.oldestFirst,
     this.onSortNewest,
     this.onSortOldest,
@@ -153,8 +173,12 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
           PostActionBar(
             onUpvote: onUpvote,
             onReply: onReply,
+            onFavorite: onFavorite,
+            onShare: onShare,
             isUpvoted: isUpvoted,
             isVoting: isVoting,
+            isFavorited: isFavorited,
+            isFavoriting: isFavoriting,
             commentSort: commentSort,
             onSortNewest: onSortNewest,
             onSortOldest: onSortOldest,
@@ -170,9 +194,12 @@ class _StickyPostHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_StickyPostHeaderDelegate oldDelegate) {
     return item.id != oldDelegate.item.id ||
         item.title != oldDelegate.item.title ||
+        item.score != oldDelegate.item.score ||
         width != oldDelegate.width ||
         isUpvoted != oldDelegate.isUpvoted ||
         isVoting != oldDelegate.isVoting ||
+        isFavorited != oldDelegate.isFavorited ||
+        isFavoriting != oldDelegate.isFavoriting ||
         commentSort != oldDelegate.commentSort;
   }
 }

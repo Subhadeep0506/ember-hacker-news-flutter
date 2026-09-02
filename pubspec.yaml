@@ -29,6 +29,8 @@ dependencies:
   lucide_icons_flutter: ^3.1.14+2
   webview_flutter: ^4.14.0
   markdown: ^7.3.1
+  share_plus: ^13.3.0
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

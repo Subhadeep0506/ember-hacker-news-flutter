@@ -4,7 +4,12 @@ import 'package:flutter/material.dart';
 /// Horizontal space added per nesting level (also the spacing between rails).
 /// Kept a little wider than the avatar diameter so avatars at adjacent depths
 /// don't overlap and the connector elbow has room to read as a curve.
-const double kCommentIndent = 32.0;
+const double kCommentIndent = 20.0;
+
+/// Maximum visual nesting depth. Deeper replies stack at this same inset
+/// (Reddit-style) instead of marching further right, so bubbles and their
+/// action buttons never run off-screen on narrow layouts.
+const int kMaxIndentDepth = 6;
 
 /// Radius of the author avatar; the connector curve runs into its centre.
 const double kCommentAvatarRadius = 15.0;

@@ -6,6 +6,13 @@ class PostDetail {
   final List<Comment> comments;
 
   const PostDetail({required this.item, required this.comments});
+
+  PostDetail copyWith({ItemResponse? item, List<Comment>? comments}) {
+    return PostDetail(
+      item: item ?? this.item,
+      comments: comments ?? this.comments,
+    );
+  }
 }
 
 class PostRepository {

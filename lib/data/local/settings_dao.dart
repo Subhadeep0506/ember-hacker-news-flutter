@@ -1,54 +1,39 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:sqflite/sqflite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'database_helper.dart';
-
+/// Key/value store for small, persistent app state (settings, auth token,
+/// upvoted item ids). Backed by [SharedPreferences] so it persists across
+/// restarts on every platform — including web (localStorage), where the
+/// sqflite-backed DAOs are no-ops.
 class SettingsDao {
-  Future<void> set(String key, String value) async {
-    if (kIsWeb) return;
+  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
-    final db = await DatabaseHelper.database;
-    await db.insert('settings', {
-      'key': key,
-      'value': value,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> set(String key, String value) async {
+    final prefs = await _prefs;
+    await prefs.setString(key, value);
   }
 
   Future<String?> get(String key) async {
-    if (kIsWeb) return null;
-
-    final db = await DatabaseHelper.database;
-    final rows = await db.query(
-      'settings',
-      where: 'key = ?',
-      whereArgs: [key],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return rows.first['value'] as String?;
+    final prefs = await _prefs;
+    return prefs.getString(key);
   }
 
   Future<Map<String, String>> getAll() async {
-    if (kIsWeb) return {};
-
-    final db = await DatabaseHelper.database;
-    final rows = await db.query('settings');
-    return {
-      for (final row in rows) row['key'] as String: row['value'] as String,
-    };
+    final prefs = await _prefs;
+    final result = <String, String>{};
+    for (final key in prefs.getKeys()) {
+      final value = prefs.get(key);
+      if (value is String) result[key] = value;
+    }
+    return result;
   }
 
   Future<void> delete(String key) async {
-    if (kIsWeb) return;
-
-    final db = await DatabaseHelper.database;
-    await db.delete('settings', where: 'key = ?', whereArgs: [key]);
+    final prefs = await _prefs;
+    await prefs.remove(key);
   }
 
   Future<void> clearAll() async {
-    if (kIsWeb) return;
-
-    final db = await DatabaseHelper.database;
-    await db.delete('settings');
+    final prefs = await _prefs;
+    await prefs.clear();
   }
 }

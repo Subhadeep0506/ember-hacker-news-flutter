@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/api/api_client.dart';
 import '../../data/api/auth_api_service.dart';
 import '../../data/api/comment_api_service.dart';
+import '../../data/api/favorite_api_service.dart';
 import '../../data/api/feed_api_service.dart';
 import '../../data/api/link_preview_service.dart';
 import '../../data/api/og_image_api_service.dart';
@@ -15,6 +16,7 @@ import '../../data/local/settings_dao.dart';
 import '../../data/local/story_dao.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/comment_repository.dart';
+import '../../data/repositories/favorite_repository.dart';
 import '../../data/repositories/feed_repository.dart';
 import '../../data/repositories/post_repository.dart';
 import '../../data/repositories/search_repository.dart';
@@ -22,6 +24,7 @@ import '../../data/repositories/settings_repository.dart';
 import '../../data/repositories/submit_repository.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/repositories/vote_repository.dart';
+import '../../data/repositories/votes_repository.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
@@ -76,6 +79,18 @@ final voteRepositoryProvider = Provider<VoteRepository>(
   (ref) => VoteRepository(ref.watch(voteApiServiceProvider)),
 );
 
+final votesRepositoryProvider = Provider<VotesRepository>(
+  (ref) => VotesRepository(ref.watch(settingsDaoProvider)),
+);
+
+final favoriteApiServiceProvider = Provider<FavoriteApiService>(
+  (ref) => FavoriteApiService(ref.watch(apiClientProvider)),
+);
+
+final favoriteRepositoryProvider = Provider<FavoriteRepository>(
+  (ref) => FavoriteRepository(ref.watch(favoriteApiServiceProvider)),
+);
+
 final commentApiServiceProvider = Provider<CommentApiService>(
   (ref) => CommentApiService(ref.watch(apiClientProvider)),
 );
@@ -92,7 +107,10 @@ final linkPreviewServiceProvider = Provider<LinkPreviewService>(
   (ref) => LinkPreviewService(ref.watch(ogImageApiServiceProvider)),
 );
 
-final ogImageProvider = FutureProvider.family<String?, String>((ref, url) async {
+final ogImageProvider = FutureProvider.family<String?, String>((
+  ref,
+  url,
+) async {
   ref.keepAlive();
   final service = ref.read(linkPreviewServiceProvider);
   return service.fetchOgImage(url);

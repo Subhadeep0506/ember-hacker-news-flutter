@@ -32,6 +32,7 @@ abstract final class AppIcons {
   static const IconData check = LucideIcons.check;
   static const IconData collapseAll = LucideIcons.chevronsDownUp;
   static const IconData expandAll = LucideIcons.chevronsUpDown;
+  static const IconData plus = LucideIcons.plus;
 
   // Status / feedback
   static const IconData imageError = LucideIcons.imageOff;

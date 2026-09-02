@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -128,12 +130,18 @@ class _ThreadedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final depth = flatComment.depth;
+    // Clamp the visual indent so deeply nested threads stop marching right and
+    // never push the bubble or its action buttons off-screen. Rails are trimmed
+    // to match the clamped depth so the painter stays aligned with the avatar.
+    final indentDepth = math.min(flatComment.depth, kMaxIndentDepth);
+    final clampedRails = flatComment.rails.length > kMaxIndentDepth
+        ? flatComment.rails.take(kMaxIndentDepth).toList()
+        : flatComment.rails;
 
     return CustomPaint(
       painter: CommentThreadPainter(
-        depth: depth,
-        rails: flatComment.rails,
+        depth: indentDepth,
+        rails: clampedRails,
         hasChildRail: flatComment.hasChildRail,
         color: colorScheme.outlineVariant,
       ),
@@ -146,7 +154,7 @@ class _ThreadedRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(width: depth * kCommentIndent),
+            SizedBox(width: indentDepth * kCommentIndent),
             CommentAvatar(
               username: isDeleted ? null : flatComment.comment.by,
               size: kCommentAvatarRadius * 2,
@@ -238,8 +246,6 @@ class SkeletonCommentTile extends StatelessWidget {
               Text('Upvote', style: actionStyle),
               const SizedBox(width: 16),
               Text('Reply', style: actionStyle),
-              const SizedBox(width: 16),
-              Text('Link', style: actionStyle),
             ],
           ),
         ],
@@ -297,8 +303,10 @@ class _CommentHeader extends StatelessWidget {
                 if (isOp) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
                       color: accent?.withAlpha(30),
                       borderRadius: BorderRadius.circular(4),
@@ -361,7 +369,11 @@ class _CommentActions extends StatelessWidget {
       context,
     ).textTheme.labelSmall?.copyWith(color: color, fontSize: 11);
 
-    return Row(
+    // Wrap (not Row) so the chips flow to a second line rather than overflowing
+    // inside a narrow, deeply-nested bubble.
+    return Wrap(
+      spacing: 16,
+      runSpacing: 4,
       children: [
         _CommentActionChip(
           icon: AppIcons.upvote,
@@ -373,27 +385,12 @@ class _CommentActions extends StatelessWidget {
               : style,
           onTap: onUpvote,
         ),
-        const SizedBox(width: 16),
         _CommentActionChip(
           icon: AppIcons.reply,
           label: 'Reply',
           color: color,
           style: style,
           onTap: onReply,
-        ),
-        const SizedBox(width: 16),
-        _CommentActionChip(
-          icon: AppIcons.link,
-          label: 'Link',
-          color: color,
-          style: style,
-        ),
-        const SizedBox(width: 16),
-        _CommentActionChip(
-          icon: AppIcons.openExternal,
-          label: 'HN',
-          color: color,
-          style: style,
         ),
       ],
     );
